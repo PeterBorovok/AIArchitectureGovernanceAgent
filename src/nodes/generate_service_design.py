@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from src.agent_state import AgentState
-from src.llm import generate_structured_service_design, load_schema
-from src.config import SCHEMAS_DIR
+from src.llm import generate_structured_service_design
+from src.prompt_loader import load_prompt_template
 
 
 def build_prompt(state: AgentState) -> str:
@@ -15,81 +16,72 @@ def build_prompt(state: AgentState) -> str:
     adr_summary = _compact_adr_summary(state.adr_summaries)
     guidance_summary = _compact_guidance_summary(state.guidance)
     template_summary = _compact_template_summary(state.service_template)
-
     approved_service_names = state.approved_services[:20]
 
     edit_comment = ""
+    is_edit = False
     if state.last_decision and state.last_decision.get("action") == "edit":
         edit_comment = state.last_decision.get("comment", "").strip()
+        is_edit = bool(edit_comment)
 
-    edit_block = ""
-    if edit_comment:
-        edit_block = f"""
-Reviewer feedback for this regeneration:
-{edit_comment}
+    previous_proposal = state.previous_proposal or state.current_proposal
 
-You must incorporate this reviewer feedback explicitly.
-If the feedback asks to refine service purpose, owned data, responsibilities, versioning, or integrations, update the proposal accordingly.
-Do not ignore the reviewer feedback.
-""".strip()
+    template_name = "service_design_edit_prompt.txt" if is_edit else "service_design_prompt.txt"
+    template = load_prompt_template(template_name)
 
-    return f"""
-You are an enterprise architecture design agent.
+    print("DEBUG build_prompt template length:", len(template))
+    print("DEBUG build_prompt template name:", template_name)
 
-Design exactly one service:
-{current_service}
+    formatted_prompt = template.format(
+        current_service=current_service,
+        baseline_service=json.dumps(baseline_service, indent=2, ensure_ascii=False),
+        extracted_service=json.dumps(extracted_service, indent=2, ensure_ascii=False),
+        adr_summary=json.dumps(adr_summary, indent=2, ensure_ascii=False),
+        guidance_summary=json.dumps(guidance_summary, indent=2, ensure_ascii=False),
+        template_summary=json.dumps(template_summary, indent=2, ensure_ascii=False),
+        approved_services=json.dumps(approved_service_names, indent=2, ensure_ascii=False),
+        edit_comment=edit_comment,
+        previous_proposal=json.dumps(previous_proposal, indent=2, ensure_ascii=False)
+        if previous_proposal
+        else "None",
+    )
 
-Use the baseline service definition as the primary source of truth.
-Use the extracted service as current-state context only.
-
-Rules:
-- Respect ADR and guidance constraints.
-- Follow the microservice template.
-- Preserve the service responsibility from the baseline.
-- Preserve baseline emitted and consumed events unless there is a strong architectural reason to add candidates as open questions.
-- Do not redesign the full platform.
-- Return only valid JSON matching the schema.
-- bounded_context must not be empty.
-- service_type must not be empty.
-- data_owned must not be empty unless there is a strong and explicit justification.
-- each internal component must include a non-empty responsibility.
-- security_controls should include at least basic access control and auditability.
-- observability should include logs, metrics, and tracing where relevant.
-
-Baseline service:
-{json.dumps(baseline_service, indent=2)}
-
-Extracted current-state service:
-{json.dumps(extracted_service, indent=2)}
-
-ADR summary:
-{json.dumps(adr_summary, indent=2)}
-
-Guidance summary:
-{json.dumps(guidance_summary, indent=2)}
-
-Template summary:
-{json.dumps(template_summary, indent=2)}
-
-Already approved services:
-{json.dumps(approved_service_names, indent=2)}
-
-{edit_block}
-""".strip()
+    print("DEBUG formatted prompt length:", len(formatted_prompt))
+    return formatted_prompt
 
 
 def run(state: AgentState) -> AgentState:
-    schema = load_schema(SCHEMAS_DIR / "service_design_schema.json")
+    system_prompt = load_prompt_template("service_design_system_prompt.txt")
     prompt = build_prompt(state)
 
     print("DEBUG prompt length:", len(prompt))
     if state.last_decision and state.last_decision.get("action") == "edit":
         print("DEBUG edit feedback applied:", state.last_decision.get("comment", ""))
 
+    review_comment = ""
+    if state.last_decision and state.last_decision.get("action") == "edit":
+        review_comment = state.last_decision.get("comment", "").strip()
+
+    previous_proposal = state.previous_proposal or state.current_proposal
+
+    input_data = {
+        "project_name": state.project_name,
+        "service_name": state.current_service,
+        "baseline_service": state.current_baseline_service or {},
+        "extracted_service": state.current_extracted_service or {},
+        "adr_summaries": _compact_adr_summary(state.adr_summaries),
+        "guidance_summary": _compact_guidance_summary(state.guidance),
+        "template_summary": _compact_template_summary(state.service_template),
+        "approved_services": state.approved_services[:20],
+    }
+
     proposal = generate_structured_service_design(
-        prompt=prompt,
-        schema=schema,
+        input_data=input_data,
+        system_prompt=system_prompt,
+        user_prompt=prompt,
         mock=False,
+        feedback=review_comment,
+        previous_proposal=previous_proposal,
     )
 
     proposal = _normalize_service_design(proposal)
@@ -157,8 +149,9 @@ def _normalize_service_design(proposal: dict) -> dict:
         normalized.get("internal_components", [])
     )
 
+    normalized["data_owned"] = _normalize_data_owned(normalized.get("data_owned", []))
+
     for field in [
-        "data_owned",
         "consumed_events",
         "emitted_events",
         "external_integrations",
@@ -174,7 +167,7 @@ def _normalize_service_design(proposal: dict) -> dict:
     return normalized
 
 
-def _normalize_components(components: list) -> list[dict]:
+def _normalize_components(components: list[Any]) -> list[dict]:
     normalized_components: list[dict] = []
 
     if not isinstance(components, list):
@@ -193,6 +186,55 @@ def _normalize_components(components: list) -> list[dict]:
         )
 
     return normalized_components
+
+
+def _normalize_data_owned(values: Any) -> list[dict]:
+    if not isinstance(values, list):
+        return []
+
+    normalized: list[dict] = []
+
+    for item in values:
+        if isinstance(item, dict):
+            entity_name = str(
+                item.get("entity_name")
+                or item.get("name")
+                or item.get("entity")
+                or ""
+            ).strip()
+            description = str(
+                item.get("description")
+                or item.get("purpose")
+                or ""
+            ).strip()
+            storage_type = str(
+                item.get("storage_type")
+                or item.get("storage")
+                or item.get("db_technology")
+                or ""
+            ).strip()
+
+            if entity_name or description or storage_type:
+                normalized.append(
+                    {
+                        "entity_name": entity_name,
+                        "description": description,
+                        "storage_type": storage_type,
+                    }
+                )
+
+        elif isinstance(item, str):
+            value = item.strip()
+            if value:
+                normalized.append(
+                    {
+                        "entity_name": value,
+                        "description": "",
+                        "storage_type": "",
+                    }
+                )
+
+    return normalized
 
 
 def _extract_responsibility(component: dict) -> str:
@@ -226,10 +268,12 @@ def _extract_responsibility(component: dict) -> str:
 def _compact_adr_summary(adr_summaries: list[dict]) -> list[dict]:
     compact = []
     for adr in adr_summaries[:8]:
-        compact.append({
-            "name": adr.get("name", ""),
-            "content": _truncate_text(adr.get("content", ""), 600)
-        })
+        compact.append(
+            {
+                "name": adr.get("name", ""),
+                "content": _truncate_text(adr.get("content", ""), 600),
+            }
+        )
     return compact
 
 
@@ -237,10 +281,12 @@ def _compact_guidance_summary(guidance: dict) -> list[dict]:
     docs = guidance.get("documents", [])
     compact = []
     for doc in docs[:8]:
-        compact.append({
-            "name": doc.get("name", ""),
-            "content": _truncate_text(doc.get("content", ""), 600)
-        })
+        compact.append(
+            {
+                "name": doc.get("name", ""),
+                "content": _truncate_text(doc.get("content", ""), 600),
+            }
+        )
     return compact
 
 
@@ -258,11 +304,13 @@ def _truncate_text(text: str, max_chars: int) -> str:
     return text[:max_chars] + "...[truncated]"
 
 
-def _merge_unique_strings(*lists: list[str]) -> list[str]:
+def _merge_unique_strings(*lists: list[Any]) -> list[str]:
     result: list[str] = []
     seen: set[str] = set()
 
     for values in lists:
+        if not isinstance(values, list):
+            continue
         for item in values:
             if not isinstance(item, str):
                 continue
@@ -276,7 +324,7 @@ def _merge_unique_strings(*lists: list[str]) -> list[str]:
     return result
 
 
-def _normalize_string_list(values) -> list[str]:
+def _normalize_string_list(values: Any) -> list[str]:
     if not isinstance(values, list):
         return []
 

@@ -5,8 +5,9 @@ from pathlib import Path
 from typing import Any, Dict
 
 from openai import OpenAI
-from src.config import OPENAI_API_KEY, OPENAI_MODEL
 
+from src.config import OPENAI_API_KEY, OPENAI_MODEL
+from src.mock_loader import load_mock_response
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -16,66 +17,88 @@ def load_schema(schema_path: Path) -> Dict[str, Any]:
 
 
 def generate_structured_service_design(
-    prompt: str,
-    schema: Dict[str, Any],
-    mock: bool = True,
+    input_data,
+    system_prompt,
+    user_prompt,
+    mock=False,
+    feedback=None,
+    previous_proposal=None,
 ) -> Dict[str, Any]:
-
-    print(f"Mock indicator is => {mock}")
+    print(
+        "DEBUG llm input_data keys:",
+        list(input_data.keys()) if isinstance(input_data, dict) else type(input_data),
+    )
+    print("DEBUG llm feedback:", feedback or "")
+    print("DEBUG llm previous_proposal exists:", bool(previous_proposal))
+    print("DEBUG llm user_prompt length:", len(user_prompt))
+    print("DEBUG llm system_prompt length:", len(system_prompt))
 
     if mock:
-        # keep your existing mock logic here
-        service_name = _extract_service_name_from_prompt(prompt)
+        service_name = _extract_service_name_from_input(input_data)
+        mock_response = load_mock_response(service_name)
+        if mock_response:
+            return mock_response
         return _generic_service_mock(service_name)
-
-    # ============================
-    # REAL OPENAI CALL
-    # ============================
 
     response = client.responses.create(
         model=OPENAI_MODEL,
-        temperature=0.2,
-        # response_format={
-        #     "type": "json_schema",
-        #     "json_schema": {
-        #         "name": "service_design",
-        #         "schema": schema
-        #     }
-        # },
         input=[
             {
                 "role": "system",
-                "content": (
-                    "You are a senior software architect designing microservices. "
-                    "Follow the schema strictly. "
-                    "Do not invent unrelated domain concepts. "
-                    "Stay consistent with the service name and bounded context."
-                )
+                "content": system_prompt,
             },
             {
                 "role": "user",
-                "content": prompt
-            }
+                "content": user_prompt,
+            },
         ],
     )
 
-    # Extract structured JSON safely
+    raw_text = _extract_text_response(response)
+    return _parse_json_response(raw_text)
+
+
+def _extract_text_response(response: Any) -> str:
     try:
-        return response.output[0].content[0].parsed
+        parts = []
+        for item in response.output:
+            for content in item.content:
+                if getattr(content, "type", None) == "output_text":
+                    parts.append(content.text)
+        if parts:
+            return "\n".join(parts).strip()
     except Exception:
-        # fallback if parsing fails
-        raw_text = response.output[0].content[0].text
+        pass
+
+    try:
+        return response.output[0].content[0].text.strip()
+    except Exception as exc:
+        raise ValueError(f"Could not extract text from OpenAI response: {exc}") from exc
+
+
+def _parse_json_response(raw_text: str) -> Dict[str, Any]:
+    raw_text = raw_text.strip()
+
+    if raw_text.startswith("```"):
+        lines = raw_text.splitlines()
+        if len(lines) >= 3:
+            raw_text = "\n".join(lines[1:-1]).strip()
+
+    try:
         return json.loads(raw_text)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            "Model response is not valid JSON. "
+            f"Raw response was:\n{raw_text}"
+        ) from exc
 
 
-def _extract_service_name_from_prompt(prompt: str) -> str:
-    marker = "Design exactly one service:"
-    if marker not in prompt:
-        return "Unknown Service"
-
-    after = prompt.split(marker, 1)[1].strip()
-    first_line = after.splitlines()[0].strip()
-    return first_line or "Unknown Service"
+def _extract_service_name_from_input(input_data: Any) -> str:
+    if isinstance(input_data, dict):
+        service_name = input_data.get("service_name")
+        if isinstance(service_name, str) and service_name.strip():
+            return service_name.strip()
+    return "Unknown Service"
 
 
 def _generic_service_mock(service_name: str) -> Dict[str, Any]:
@@ -83,42 +106,55 @@ def _generic_service_mock(service_name: str) -> Dict[str, Any]:
 
     return {
         "service_name": service_name,
-        "service_purpose": f"Provides {base_name.lower()} capabilities according to the platform baseline.",
+        "service_purpose": f"Provides {base_name.lower()} capabilities according to the platform baseline and service template.",
         "bounded_context": base_name,
         "service_type": "domain_service",
         "internal_components": [
             {
                 "name": f"{base_name} API",
                 "type": "api",
-                "responsibility": f"Expose {base_name.lower()} commands and queries"
+                "responsibility": f"Exposes {base_name.lower()} commands and queries",
             },
             {
                 "name": f"{base_name} Application Service",
                 "type": "application",
-                "responsibility": f"Coordinate {base_name.lower()} use cases"
+                "responsibility": f"Coordinates {base_name.lower()} use cases",
             },
             {
                 "name": f"{base_name} Domain Service",
                 "type": "domain",
-                "responsibility": f"Apply business rules"
+                "responsibility": f"Applies business rules for {base_name.lower()}",
             },
             {
                 "name": f"{base_name} Repository",
                 "type": "persistence",
-                "responsibility": f"Persist data"
+                "responsibility": f"Persists {base_name.lower()} data",
             },
             {
                 "name": f"{base_name} Event Publisher",
                 "type": "messaging",
-                "responsibility": f"Publish events"
+                "responsibility": f"Publishes {base_name.lower()} lifecycle events",
+            },
+        ],
+        "data_owned": [
+            {
+                "entity_name": base_name,
+                "description": f"Primary {base_name.lower()} records owned by the service",
+                "storage_type": "Aurora",
             }
         ],
-        "data_owned": [f"{base_name} data"],
         "consumed_events": [],
         "emitted_events": [],
         "external_integrations": [],
-        "security_controls": ["Authorization"],
-        "observability": ["Logs", "Metrics"],
+        "security_controls": [
+            "Authorization checks",
+            "Audit trail",
+        ],
+        "observability": [
+            "Structured logs",
+            "Metrics",
+            "Tracing",
+        ],
         "open_questions": [],
-        "confidence": "medium"
+        "confidence": "medium",
     }

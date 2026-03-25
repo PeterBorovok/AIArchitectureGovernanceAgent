@@ -1,9 +1,17 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from src.agent_state import AgentState
 
 
+DISCOVERY_RULES_FILE = Path(__file__).resolve().parent.parent / "prompts" / "discovery_rules.json"
+
+
 def run(state: AgentState) -> AgentState:
+    rules = _load_discovery_rules()
+
     baseline_services = state.baseline_services
     extracted_services = state.extracted_top_level_architecture.get("services", [])
 
@@ -18,73 +26,116 @@ def run(state: AgentState) -> AgentState:
     state.candidate_services = []
     state.design_queue = []
 
+    include_contract_mismatch = rules.get("include_contract_mismatch", True)
+    include_missing_internal_design = rules.get("include_missing_internal_design", True)
+    include_missing_from_top_level = rules.get("include_missing_from_top_level", True)
+    queue_order = rules.get(
+        "queue_order",
+        ["missing_from_top_level", "missing_internal_design", "contract_mismatch"],
+    )
+
+    categorized_candidates: dict[str, list[dict]] = {
+        "missing_from_top_level": [],
+        "missing_internal_design": [],
+        "contract_mismatch": [],
+        "aligned": [],
+    }
+
     for baseline in baseline_services:
         name = baseline["name"]
         extracted = extracted_by_name.get(name)
 
         if extracted is None:
-            state.missing_services.append(
-                {
+            if include_missing_from_top_level:
+                item = {
                     "name": name,
                     "reason": "Defined in baseline but missing from extracted top-level architecture",
                     "baseline": baseline,
+                    "category": "missing_from_top_level",
                 }
-            )
-            state.candidate_services.append(
-                {
-                    "name": name,
-                    "reason": "missing_from_top_level",
-                    "baseline": baseline,
-                }
-            )
-            state.design_queue.append(name)
+                state.missing_services.append(item)
+                state.candidate_services.append(item)
+                categorized_candidates["missing_from_top_level"].append(item)
             continue
 
         if baseline.get("expected_internal_design", False) and not extracted.get("internal_defined", False):
-            state.services_needing_internal_design.append(
-                {
-                    "name": name,
-                    "reason": "Service exists in extracted architecture but internal design is not defined",
-                    "baseline": baseline,
-                    "extracted": extracted,
-                }
-            )
-            if name not in state.design_queue:
-                state.design_queue.append(name)
+            item = {
+                "name": name,
+                "reason": "Service exists in extracted architecture but internal design is not defined",
+                "baseline": baseline,
+                "extracted": extracted,
+                "category": "missing_internal_design",
+            }
+            state.services_needing_internal_design.append(item)
+            if include_missing_internal_design:
+                state.candidate_services.append(item)
+                categorized_candidates["missing_internal_design"].append(item)
 
         mismatch = _detect_contract_mismatch(baseline, extracted)
         if mismatch:
-            state.services_with_contract_mismatch.append(
-                {
-                    "name": name,
-                    "reason": "Baseline and extracted service contract do not fully match",
-                    "baseline": baseline,
-                    "extracted": extracted,
-                    "mismatches": mismatch,
-                }
-            )
-            state.candidate_services.append(
-                {
-                    "name": name,
-                    "reason": "contract_mismatch",
-                    "baseline": baseline,
-                    "extracted": extracted,
-                    "mismatches": mismatch,
-                }
-            )
-            if name not in state.design_queue:
-                state.design_queue.append(name)
+            item = {
+                "name": name,
+                "reason": "Baseline and extracted service contract do not fully match",
+                "baseline": baseline,
+                "extracted": extracted,
+                "mismatches": mismatch,
+                "category": "contract_mismatch",
+            }
+            state.services_with_contract_mismatch.append(item)
+            if include_contract_mismatch:
+                state.candidate_services.append(item)
+                categorized_candidates["contract_mismatch"].append(item)
         else:
-            state.candidate_services.append(
+            categorized_candidates["aligned"].append(
                 {
                     "name": name,
-                    "reason": "missing_internal_design" if not extracted.get("internal_defined", False) else "aligned",
+                    "reason": "Baseline and extracted service are aligned",
                     "baseline": baseline,
                     "extracted": extracted,
+                    "category": "aligned",
                 }
             )
 
+    queue: list[str] = []
+    seen: set[str] = set()
+
+    for category in queue_order:
+        for item in categorized_candidates.get(category, []):
+            name = item["name"]
+            if name not in seen:
+                queue.append(name)
+                seen.add(name)
+
+    state.design_queue = queue
     return state
+
+
+def _load_discovery_rules() -> dict:
+    if not DISCOVERY_RULES_FILE.exists():
+        return {
+            "include_contract_mismatch": True,
+            "include_missing_internal_design": True,
+            "include_missing_from_top_level": True,
+            "queue_order": [
+                "missing_from_top_level",
+                "missing_internal_design",
+                "contract_mismatch",
+            ],
+        }
+
+    try:
+        return json.loads(DISCOVERY_RULES_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {
+            "include_contract_mismatch": True,
+            "include_missing_internal_design": True,
+            "include_missing_from_top_level": True,
+            "queue_order": [
+                "missing_from_top_level",
+                "missing_internal_design",
+                "contract_mismatch",
+            ],
+        }
 
 
 def _detect_contract_mismatch(baseline: dict, extracted: dict) -> dict:

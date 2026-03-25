@@ -5,6 +5,7 @@ from pathlib import Path
 
 from src.agent_state import AgentState
 from src.config import PORTFOLIO_DIR
+from src.prompt_loader import load_prompt_template
 
 
 def _slugify(name: str) -> str:
@@ -28,84 +29,96 @@ def run(state: AgentState) -> AgentState:
 
     normalized_proposal = _normalize_proposal_for_output(proposal)
 
-    # service.json
     (service_dir / "service.json").write_text(
         json.dumps(normalized_proposal, indent=2, ensure_ascii=False),
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
-    # events.json
     events_doc = {
         "service_name": service_name,
         "consumed_events": normalized_proposal.get("consumed_events", []),
-        "emitted_events": normalized_proposal.get("emitted_events", [])
+        "emitted_events": normalized_proposal.get("emitted_events", []),
     }
     (service_dir / "events.json").write_text(
         json.dumps(events_doc, indent=2, ensure_ascii=False),
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
-    # design.md
-    md = f"# {service_name}\n\n"
-
-    md += "## Purpose\n"
-    md += f"{normalized_proposal.get('service_purpose', '')}\n\n"
-
-    md += "## Bounded Context\n"
-    md += f"{normalized_proposal.get('bounded_context', '')}\n\n"
-
-    md += "## Service Type\n"
-    md += f"{normalized_proposal.get('service_type', '')}\n\n"
-
-    md += "## Internal Components\n"
-    for component in normalized_proposal.get("internal_components", []):
-        md += (
-            f"- **{component.get('name', '')}** "
-            f"({component.get('type', '')}): "
-            f"{component.get('responsibility', '')}\n"
-        )
-
-    md += "\n## Data Owned\n"
-    for item in normalized_proposal.get("data_owned", []):
-        md += f"- {item}\n"
-
-    md += "\n## Consumed Events\n"
-    for event in normalized_proposal.get("consumed_events", []):
-        md += f"- {event}\n"
-
-    md += "\n## Emitted Events\n"
-    for event in normalized_proposal.get("emitted_events", []):
-        md += f"- {event}\n"
-
-    md += "\n## External Integrations\n"
-    for item in normalized_proposal.get("external_integrations", []):
-        md += f"- {item}\n"
-
-    md += "\n## Security Controls\n"
-    for item in normalized_proposal.get("security_controls", []):
-        md += f"- {item}\n"
-
-    md += "\n## Observability\n"
-    for item in normalized_proposal.get("observability", []):
-        md += f"- {item}\n"
-
-    md += "\n## Open Questions\n"
-    open_questions = normalized_proposal.get("open_questions", [])
-    if open_questions:
-        for item in open_questions:
-            md += f"- {item}\n"
-    else:
-        md += "- None\n"
-
-    md += "\n## Confidence\n"
-    md += f"{normalized_proposal.get('confidence', '')}\n"
-
-    (service_dir / "design.md").write_text(md, encoding="utf-8")
+    design_md = _build_design_markdown(normalized_proposal)
+    (service_dir / "design.md").write_text(design_md, encoding="utf-8")
 
     if service_name not in state.approved_services:
         state.approved_services.append(service_name)
 
     return state
+
+
+def _build_design_markdown(proposal: dict) -> str:
+    template = _load_design_doc_template()
+
+    return template.format(
+        service_name=proposal.get("service_name", ""),
+        service_purpose=proposal.get("service_purpose", ""),
+        bounded_context=proposal.get("bounded_context", ""),
+        service_type=proposal.get("service_type", ""),
+        internal_components=_format_internal_components(proposal.get("internal_components", [])),
+        data_owned=_format_bullet_list(proposal.get("data_owned", [])),
+        consumed_events=_format_bullet_list(proposal.get("consumed_events", [])),
+        emitted_events=_format_bullet_list(proposal.get("emitted_events", [])),
+        external_integrations=_format_bullet_list(proposal.get("external_integrations", [])),
+        security_controls=_format_bullet_list(proposal.get("security_controls", [])),
+        observability=_format_bullet_list(proposal.get("observability", [])),
+        open_questions=_format_bullet_list(proposal.get("open_questions", []), empty_text="- None"),
+        confidence=proposal.get("confidence", ""),
+    )
+
+
+def _load_design_doc_template() -> str:
+    try:
+        return load_prompt_template("service_design_doc_template.md")
+    except FileNotFoundError:
+        return _default_design_doc_template()
+
+
+def _default_design_doc_template() -> str:
+    return """# {service_name}
+
+## Purpose
+{service_purpose}
+
+## Bounded Context
+{bounded_context}
+
+## Service Type
+{service_type}
+
+## Internal Components
+{internal_components}
+
+## Data Owned
+{data_owned}
+
+## Consumed Events
+{consumed_events}
+
+## Emitted Events
+{emitted_events}
+
+## External Integrations
+{external_integrations}
+
+## Security Controls
+{security_controls}
+
+## Observability
+{observability}
+
+## Open Questions
+{open_questions}
+
+## Confidence
+{confidence}
+"""
 
 
 def _normalize_proposal_for_output(proposal: dict) -> dict:
@@ -197,6 +210,26 @@ def _extract_responsibility(component: dict) -> str:
         return component["purpose"].strip()
 
     return ""
+
+
+def _format_internal_components(components: list[dict]) -> str:
+    if not components:
+        return "- None"
+
+    lines = []
+    for component in components:
+        lines.append(
+            f"- **{component.get('name', '')}** "
+            f"({component.get('type', '')}): "
+            f"{component.get('responsibility', '')}"
+        )
+    return "\n".join(lines)
+
+
+def _format_bullet_list(values: list[str], empty_text: str = "- None") -> str:
+    if not values:
+        return empty_text
+    return "\n".join(f"- {value}" for value in values)
 
 
 def _normalize_string_list(values) -> list[str]:

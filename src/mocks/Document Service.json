@@ -1,0 +1,68 @@
+{
+  "service_name": "Document Service",
+  "service_purpose": "Manages documents, attachments, versions, metadata, and publishing lifecycle across the platform.",
+  "bounded_context": "Documents",
+  "service_type": "domain_service",
+  "internal_components": [
+    {
+      "name": "Document API",
+      "type": "api",
+      "responsibility": "Exposes document commands and queries"
+    },
+    {
+      "name": "Document Application Service",
+      "type": "application",
+      "responsibility": "Coordinates document lifecycle use cases"
+    },
+    {
+      "name": "Document Domain Service",
+      "type": "domain",
+      "responsibility": "Applies business rules for documents and versions"
+    },
+    {
+      "name": "Document Repository",
+      "type": "persistence",
+      "responsibility": "Persists document metadata and version history"
+    },
+    {
+      "name": "Document Event Publisher",
+      "type": "messaging",
+      "responsibility": "Publishes document lifecycle events"
+    }
+  ],
+  "data_owned": [
+    "Document metadata",
+    "Document version index",
+    "Document linkage records"
+  ],
+  "consumed_events": [
+    "FileScannedClean",
+    "FileScannedInfected",
+    "RequestSubmitted"
+  ],
+  "emitted_events": [
+    "DocumentRegistered",
+    "DocumentVersionCreated",
+    "DocumentLinkedToSubmission",
+    "DocumentMetadataUpdated",
+    "DocumentPublished",
+    "DocumentArchived",
+    "DocumentReadyForIndexing",
+    "DocumentBlocked"
+  ],
+  "external_integrations": [
+    "Attachment and Scanning Service",
+    "Indexing pipeline"
+  ],
+  "security_controls": [
+    "Authorization checks",
+    "Audit trail"
+  ],
+  "observability": [
+    "Structured logs",
+    "Metrics",
+    "Tracing"
+  ],
+  "open_questions": [],
+  "confidence": "high"
+}

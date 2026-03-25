@@ -53,5 +53,8 @@ class AgentState:
     finished: bool = False
     errors: List[str] = field(default_factory=list)
 
+    # Revision of previous proposal for edit actions
+    previous_proposal: Optional[Dict[str, Any]] = None
+    
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)

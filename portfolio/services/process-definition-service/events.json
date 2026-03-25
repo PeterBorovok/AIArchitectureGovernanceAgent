@@ -1,8 +1,0 @@
-{
-  "service_name": "Process Definition Service",
-  "consumed_events": [],
-  "emitted_events": [
-    "ProcessSchemaPublished",
-    "ProcessSchemaUpdated"
-  ]
-}

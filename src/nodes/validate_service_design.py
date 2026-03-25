@@ -103,7 +103,7 @@ def run(state: AgentState) -> AgentState:
             issues.append("RequestSubmission Service proposal contains document-oriented owned data")
 
     if not proposal.get("data_owned"):
-        warnings.append("Proposal has no declared owned data")
+        issues.append("Service must declare owned data entities")
 
     if not proposal.get("emitted_events") and not proposal.get("consumed_events"):
         warnings.append("Proposal has no emitted or consumed events")

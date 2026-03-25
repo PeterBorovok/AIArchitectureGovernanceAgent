@@ -1,0 +1,61 @@
+{
+  "service_name": "Process Definition Service",
+  "service_purpose": "Stores schemas and rules for processes and provides validation configuration, UI bundle metadata, and label configuration.",
+  "bounded_context": "Process Definition",
+  "service_type": "domain_service",
+  "internal_components": [
+    {
+      "name": "Process Definition API",
+      "type": "api",
+      "responsibility": "Exposes commands and queries for managing process definitions"
+    },
+    {
+      "name": "Process Definition Application Service",
+      "type": "application",
+      "responsibility": "Coordinates process definition use cases such as publish, update, and retrieval"
+    },
+    {
+      "name": "Process Definition Domain Service",
+      "type": "domain",
+      "responsibility": "Applies business rules for schema lifecycle, validation configuration, and publishing"
+    },
+    {
+      "name": "Process Definition Repository",
+      "type": "persistence",
+      "responsibility": "Persists process definitions, schema versions, UI bundle references, and label configuration"
+    },
+    {
+      "name": "Process Definition Event Publisher",
+      "type": "messaging",
+      "responsibility": "Publishes process schema lifecycle events"
+    }
+  ],
+  "data_owned": [
+    "Process definitions",
+    "Schema versions",
+    "Validation configuration",
+    "UI bundle metadata",
+    "Label configuration"
+  ],
+  "consumed_events": [],
+  "emitted_events": [
+    "ProcessSchemaPublished",
+    "ProcessSchemaUpdated"
+  ],
+  "external_integrations": [
+    "Shared validation engine",
+    "UI bundle storage"
+  ],
+  "security_controls": [
+    "Authorization checks",
+    "Audit trail",
+    "Versioning controls"
+  ],
+  "observability": [
+    "Structured logs",
+    "Metrics",
+    "Tracing"
+  ],
+  "open_questions": [],
+  "confidence": "high"
+}

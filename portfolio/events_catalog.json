@@ -1,18 +1,3 @@
 {
-  "events": [
-    {
-      "event_name": "ProcessSchemaPublished",
-      "emitted_by": [
-        "Process Definition Service"
-      ],
-      "consumed_by": []
-    },
-    {
-      "event_name": "ProcessSchemaUpdated",
-      "emitted_by": [
-        "Process Definition Service"
-      ],
-      "consumed_by": []
-    }
-  ]
+  "events": []
 }

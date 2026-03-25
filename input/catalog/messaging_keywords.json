@@ -1,0 +1,21 @@
+{
+  "messaging_exact": [],
+  "messaging_contains": [
+    "event",
+    "events",
+    "emit",
+    "emits",
+    "consume",
+    "consumes",
+    "topic",
+    "queue",
+    "requestsubmitted",
+    "requestapproved",
+    "requestrejected",
+    "statuschanged"
+  ],
+  "messaging_exclude_contains": [
+    "api",
+    "layer"
+  ]
+}

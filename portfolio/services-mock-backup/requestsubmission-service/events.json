@@ -1,0 +1,9 @@
+{
+  "service_name": "RequestSubmission Service",
+  "consumed_events": [],
+  "emitted_events": [
+    "RequestSubmitted",
+    "RequestUpdated",
+    "RequestWithdrawn"
+  ]
+}

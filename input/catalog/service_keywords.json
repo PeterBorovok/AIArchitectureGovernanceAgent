@@ -1,0 +1,25 @@
+{
+  "service_exact": [],
+  "service_contains": [
+    "service"
+  ],
+  "service_exclude_contains": [
+    "api layer",
+    "repository layer",
+    "persistency",
+    "persistence",
+    "domain layer",
+    "application layer",
+    "integration layer",
+    "validator",
+    "idempotency",
+    "sync calls",
+    "async calls",
+    "cloudwatch",
+    "cloud watch",
+    "secret manager",
+    "kms",
+    "raw",
+    "clean"
+  ]
+}

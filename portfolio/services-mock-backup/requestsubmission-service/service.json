@@ -1,0 +1,60 @@
+{
+  "service_name": "RequestSubmission Service",
+  "service_purpose": "Manages the submission process, generates UI using compiled bundles, validates input using the shared validation engine, and stores submissions.",
+  "bounded_context": "Request Submission",
+  "service_type": "domain_service",
+  "internal_components": [
+    {
+      "name": "Request Submission API",
+      "type": "api",
+      "responsibility": "Exposes submission commands and queries"
+    },
+    {
+      "name": "Request Submission Application Service",
+      "type": "application",
+      "responsibility": "Coordinates submission lifecycle use cases"
+    },
+    {
+      "name": "Request Submission Domain Service",
+      "type": "domain",
+      "responsibility": "Applies submission business rules and validation orchestration"
+    },
+    {
+      "name": "Request Submission Repository",
+      "type": "persistence",
+      "responsibility": "Persists submissions and submission state"
+    },
+    {
+      "name": "Request Submission Event Publisher",
+      "type": "messaging",
+      "responsibility": "Publishes submission lifecycle events"
+    }
+  ],
+  "data_owned": [
+    "Submission records",
+    "Submission state",
+    "Submission payload references"
+  ],
+  "consumed_events": [],
+  "emitted_events": [
+    "RequestSubmitted",
+    "RequestUpdated",
+    "RequestWithdrawn"
+  ],
+  "external_integrations": [
+    "Process Definition Service",
+    "Shared validation engine"
+  ],
+  "security_controls": [
+    "Authorization checks",
+    "Audit trail",
+    "Input validation controls"
+  ],
+  "observability": [
+    "Structured logs",
+    "Metrics",
+    "Tracing"
+  ],
+  "open_questions": [],
+  "confidence": "high"
+}

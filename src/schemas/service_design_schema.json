@@ -1,0 +1,55 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "service_name",
+    "service_purpose",
+    "bounded_context",
+    "service_type",
+    "internal_components",
+    "data_owned",
+    "consumed_events",
+    "emitted_events",
+    "external_integrations",
+    "security_controls",
+    "observability",
+    "open_questions",
+    "confidence"
+  ],
+  "properties": {
+    "service_name": { "type": "string" },
+    "service_purpose": { "type": "string" },
+    "bounded_context": { "type": "string" },
+    "service_type": {
+      "type": "string",
+      "enum": ["domain_service", "application_service", "integration_service", "platform_service", "query_service"]
+    },
+    "internal_components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "type", "responsibility"],
+        "properties": {
+          "name": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["api", "application", "domain", "persistence", "messaging", "integration", "audit", "observability"]
+          },
+          "responsibility": { "type": "string" }
+        }
+      }
+    },
+    "data_owned": { "type": "array", "items": { "type": "string" } },
+    "consumed_events": { "type": "array", "items": { "type": "string" } },
+    "emitted_events": { "type": "array", "items": { "type": "string" } },
+    "external_integrations": { "type": "array", "items": { "type": "string" } },
+    "security_controls": { "type": "array", "items": { "type": "string" } },
+    "observability": { "type": "array", "items": { "type": "string" } },
+    "open_questions": { "type": "array", "items": { "type": "string" } },
+    "confidence": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    }
+  }
+}

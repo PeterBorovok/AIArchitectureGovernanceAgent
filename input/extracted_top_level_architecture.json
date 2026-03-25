@@ -1,0 +1,25 @@
+{
+  "services": [
+    {
+      "name": "Process Definition Service",
+      "description": "Stores schemas and rules for process(es), Provides validation config, UI bundle, and label configuration.",
+      "emits": [
+        "ProcessSchemaPublished",
+        "ProcessSchemaUpdated"
+      ],
+      "consumes": [],
+      "internal_defined": false
+    },
+    {
+      "name": "RequestSubmission Service",
+      "description": "Manages the submission process, generates UI using compiled bundles, Validates input using shared validation engine. Stores request (=submissions)",
+      "emits": [
+        "RequestSubmitted",
+        "RequestUpdated",
+        "RequestWithdrawn"
+      ],
+      "consumes": [],
+      "internal_defined": false
+    }
+  ]
+}

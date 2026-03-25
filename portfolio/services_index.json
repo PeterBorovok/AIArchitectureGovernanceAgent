@@ -1,0 +1,9 @@
+{
+  "services": [
+    {
+      "name": "Process Definition Service",
+      "status": "approved",
+      "path": "portfolio/services/process-definition-service/service.json"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "name": "Process Definition Service",
+  "description": "Stores schemas and rules for process(es), provides validation config, UI bundle, and label configuration.",
+  "bounded_context": "Owns the definition and publication of process schemas and related configuration artifacts used to validate and render process definitions.",
+  "purpose": "Centralize storage, versioning, and publication of process schemas and associated configuration such as validation rules, UI bundle metadata, and labels.",
+  "internal_components": [
+    {
+      "name": "Process Definition API",
+      "type": "api",
+      "responsibility": "Expose endpoints to create, update, retrieve, and publish process definitions; Validate request shape and authorization; Return schema and configuration artifacts to consumers"
+    },
+    {
+      "name": "Process Definition Application Service",
+      "type": "application",
+      "responsibility": "Coordinate process definition lifecycle operations; Apply validation and publication workflows; Orchestrate persistence and event emission"
+    },
+    {
+      "name": "Process Definition Domain Model",
+      "type": "domain",
+      "responsibility": "Represent process schema, rules, validation config, UI bundle, and label configuration; Enforce domain invariants for versioning and publication readiness"
+    },
+    {
+      "name": "Process Definition Repository",
+      "type": "persistence",
+      "responsibility": "Store process schema versions and related configuration artifacts; Support retrieval by process identifier and version"
+    },
+    {
+      "name": "Process Definition Event Publisher",
+      "type": "messaging",
+      "responsibility": "Publish process schema lifecycle events; Ensure emitted events reflect committed state"
+    }
+  ],
+  "data_owned": [
+    "Process schemas",
+    "Process schema versions",
+    "Validation configuration",
+    "UI bundle metadata",
+    "Label configuration",
+    "Publication status and timestamps"
+  ],
+  "consumed_events": [],
+  "emitted_events": [
+    "ProcessSchemaPublished",
+    "ProcessSchemaUpdated"
+  ],
+  "external_integrations": [
+    "Process definition consumers that retrieve schemas and configuration via API",
+    "Event bus for publishing process schema lifecycle events"
+  ],
+  "security_controls": [
+    "Authenticate API access",
+    "Authorize write and publish operations",
+    "Validate all schema and configuration inputs",
+    "Audit publication and update actions"
+  ],
+  "observability": [
+    "Structured logs for create, update, validate, and publish operations",
+    "Metrics for request volume, validation failures, and publication outcomes",
+    "Tracing across API, application, persistence, and messaging components"
+  ],
+  "open_questions": [],
+  "notes": [
+    "No ADRs or guidance documents were provided.",
+    "Baseline and extracted current-state definitions are aligned; no unresolved differences were identified."
+  ],
+  "service_name": "Process Definition Service",
+  "service_purpose": "Centralize storage, versioning, and publication of process schemas and associated configuration such as validation rules, UI bundle metadata, and labels.",
+  "confidence": "medium",
+  "service_type": ""
+}

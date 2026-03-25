@@ -1,0 +1,64 @@
+{
+  "name": "Process Definition Service",
+  "service_type": "microservice",
+  "purpose": "Define processes that are managed by the platform, Versioned Process Catalog, Stores schemas and rules for process(es). Provides versioned validation configuration, versioned UI bundle, and versioned label configuration for process definitions.",
+  "bounded_context": "Process Definition",
+  "internal_components": [
+    {
+      "name": "Process Definition API",
+      "type": "api",
+      "responsibility": "Exposes endpoints to create, update, publish, retrieve, and list versioned process definitions, including schemas, rules, validation configuration, UI bundles, and label configuration."
+    },
+    {
+      "name": "Process Definition Application Service",
+      "type": "application",
+      "responsibility": "Coordinates process definition lifecycle use cases, including draft management, version creation, publication, retrieval, and validation of commands against domain rules."
+    },
+    {
+      "name": "Process Definition Domain",
+      "type": "domain",
+      "responsibility": "Encapsulates business rules for process definition versioning, publication state transitions, schema consistency, and integrity of validation, UI bundle, and label configuration artifacts."
+    },
+    {
+      "name": "Process Definition Repository",
+      "type": "persistence",
+      "responsibility": "Persists and retrieves versioned process definitions, metadata, publication status, and associated configuration artifacts."
+    },
+    {
+      "name": "Process Definition Event Publisher",
+      "type": "messaging",
+      "responsibility": "Publishes process definition lifecycle events when a process schema version is published or updated."
+    }
+  ],
+  "data_owned": [
+    "Process definition metadata",
+    "Versioned process schemas",
+    "Versioned process rules",
+    "Versioned validation configurations",
+    "Versioned UI bundles",
+    "Versioned label configurations",
+    "Process definition publication status",
+    "Process definition version history"
+  ],
+  "consumed_events": [],
+  "emitted_events": [
+    "ProcessSchemaPublished",
+    "ProcessSchemaUpdated"
+  ],
+  "external_integrations": [],
+  "security_controls": [
+    "Role-based access control for creating, updating, publishing, and reading process definitions",
+    "Authentication and authorization enforced on all service endpoints",
+    "Audit logging for process definition creation, modification, publication, and access to versioned artifacts",
+    "Input validation and schema validation for all submitted definition payloads"
+  ],
+  "observability": [
+    "Structured application logs for API requests, lifecycle actions, validation failures, and event publication",
+    "Metrics for request rates, error rates, publish operations, update operations, and persistence latency",
+    "Distributed tracing across API, application, persistence, and messaging components"
+  ],
+  "service_name": "Process Definition Service",
+  "service_purpose": "Define processes that are managed by the platform, Versioned Process Catalog, Stores schemas and rules for process(es). Provides versioned validation configuration, versioned UI bundle, and versioned label configuration for process definitions.",
+  "open_questions": [],
+  "confidence": "medium"
+}

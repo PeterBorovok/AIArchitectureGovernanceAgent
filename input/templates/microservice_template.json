@@ -1,0 +1,20 @@
+{
+  "required_component_types": [
+    "api",
+    "application",
+    "domain",
+    "persistence",
+    "messaging"
+  ],
+  "documentation_sections": [
+    "purpose",
+    "bounded_context",
+    "internal_components",
+    "data_owned",
+    "consumed_events",
+    "emitted_events",
+    "external_integrations",
+    "security_controls",
+    "observability"
+  ]
+}

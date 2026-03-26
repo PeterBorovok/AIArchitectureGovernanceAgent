@@ -1,0 +1,64 @@
+{
+  "service_name": "Request Submission Service",
+  "purpose": "Manages the end-user request submission process by providing submission experience metadata and compiled UI bundle references, validating submitted input through the shared validation engine, persisting request submissions, and handling request update and withdrawal actions. For new submissions, the service resolves the active process schema and associated validation configuration from locally projected process-definition metadata. For existing submissions, it preserves version pinning to the schema, validation configuration, UI bundle metadata, and labels assigned at creation time unless an explicit migration policy is introduced.",
+  "bounded_context": "Request Submission",
+  "service_type": "domain",
+  "internal_components": [
+    {
+      "name": "Request Submission API",
+      "type": "api",
+      "responsibility": "Exposes authenticated endpoints to create, retrieve, update, and withdraw request submissions, and returns submission metadata plus compiled UI bundle references and presentation metadata required by clients to render the submission experience for the submission's assigned schema version."
+    },
+    {
+      "name": "Submission Application Service",
+      "type": "application",
+      "responsibility": "Coordinates submission use cases end to end by resolving the active process schema projection for new submissions, loading the pinned schema and validation context for existing submissions, invoking the shared validation engine, applying lifecycle actions, persisting changes, recording audit information, and triggering reliable event publication. It also orchestrates projection refresh handling when process schema events are consumed so future submissions use the latest active metadata without altering already-created submissions."
+    },
+    {
+      "name": "Submission Domain Service",
+      "type": "domain",
+      "responsibility": "Enforces business rules for submission lifecycle transitions, input acceptance, update eligibility, withdrawal eligibility, and version pinning. Ensures new submissions are created against the currently active projected process schema, validation configuration, UI bundle metadata, and labels, while existing submissions continue to use their originally assigned versioned context unless an explicit migration policy is supported."
+    },
+    {
+      "name": "Submission Repository",
+      "type": "persistence",
+      "responsibility": "Stores and retrieves request submissions, versioned submission payloads, pinned process schema and validation references, presentation metadata references, and immutable audit records from the service-owned relational datastore."
+    },
+    {
+      "name": "Submission Event Publisher",
+      "type": "messaging",
+      "responsibility": "Publishes request lifecycle domain events with reliable delivery after successful persistence of submission, update, and withdrawal actions."
+    },
+    {
+      "name": "Process Schema Projection Consumer",
+      "type": "messaging",
+      "responsibility": "Consumes process-definition events to maintain a local projection of active process schema metadata, schema content, validation configuration, compiled UI bundle metadata, and labels needed to initialize new submissions and support submission rendering without runtime coupling to the upstream process-definition service."
+    }
+  ],
+  "data_owned": [],
+  "consumed_events": [
+    "ProcessSchemaPublished",
+    "ProcessSchemaUpdated"
+  ],
+  "emitted_events": [
+    "RequestSubmitted",
+    "RequestUpdated",
+    "RequestWithdrawn"
+  ],
+  "external_integrations": [],
+  "security_controls": [
+    "Authenticated API access using platform identity controls with role-based and subject-scoped authorization for submission creation, retrieval, update, and withdrawal.",
+    "Authorization checks to ensure callers can access and modify only submissions they are permitted to manage.",
+    "Immutable audit logging for submission lifecycle actions, validation outcomes, schema/version assignments, and withdrawal operations.",
+    "Encryption in transit for API, messaging, and validation-engine integration traffic, and encryption at rest for Aurora data.",
+    "Input validation and payload sanitization prior to persistence, validation processing, and event publication."
+  ],
+  "observability": [
+    "Structured logs for submission lifecycle actions, validation engine calls, process schema event consumption, projection updates, and failure reasons with correlation identifiers.",
+    "Metrics for submission create/update/withdraw volumes, validation success/failure counts, API latency/error rates, event consumption lag, and process schema projection freshness.",
+    "Distributed tracing across API requests, application orchestration, validation engine calls, database operations, and event publication/consumption flows."
+  ],
+  "service_purpose": "Manages the end-user request submission process by providing submission experience metadata and compiled UI bundle references, validating submitted input through the shared validation engine, persisting request submissions, and handling request update and withdrawal actions. For new submissions, the service resolves the active process schema and associated validation configuration from locally projected process-definition metadata. For existing submissions, it preserves version pinning to the schema, validation configuration, UI bundle metadata, and labels assigned at creation time unless an explicit migration policy is introduced.",
+  "open_questions": [],
+  "confidence": "medium"
+}

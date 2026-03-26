@@ -24,6 +24,16 @@ Rules:
 - security_controls should include at least basic access control and auditability.
 - observability should include logs, metrics, and tracing where relevant.
 
+Mandatory output rules:
+- data_owned is mandatory and must never be empty
+- data_owned must contain at least 1-3 entities owned by the service
+- every data_owned item must be an object with:
+  - entity_name
+  - description
+  - storage_type
+- prefer Aurora for core relational business entities unless there is a clear reason otherwise
+- if previous proposal had empty data_owned, you must fix it and not repeat the same mistake
+
 Baseline service:
 {baseline_service}
 

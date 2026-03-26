@@ -1,3 +1,19 @@
 {
-  "services": []
+  "services": [
+    {
+      "name": "Process Definition Service",
+      "status": "approved",
+      "path": "portfolio/services/process-definition-service/service.json"
+    },
+    {
+      "name": "Request Submission Service",
+      "status": "approved",
+      "path": "portfolio/services/request-submission-service/service.json"
+    },
+    {
+      "name": "Civil Servant Review Service",
+      "status": "approved",
+      "path": "portfolio/services/civil-servant-review-service/service.json"
+    }
+  ]
 }

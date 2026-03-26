@@ -1,0 +1,50 @@
+{
+  "service_name": "Civil Servant Review Service",
+  "purpose": "Allows a Civil Servant to review submitted request fields, provide per-field comments, confirm or reject individual fields, record an overall review comment, and finalize the review outcome for a submitted request in alignment with the request submission lifecycle.",
+  "bounded_context": "Civil Servant request review and adjudication",
+  "service_type": "domain",
+  "internal_components": [
+    {
+      "name": "Review API",
+      "type": "api",
+      "responsibility": "Exposes endpoints to retrieve review state, submit or update per-field comments, record per-field confirm or reject decisions, submit overall review comments, and finalize the civil servant review outcome for an eligible submitted request."
+    },
+    {
+      "name": "Review Application Service",
+      "type": "application",
+      "responsibility": "Coordinates review use cases, validates that reviews are only created or changed for requests in valid lifecycle states, enforces draft versus finalized review rules, orchestrates persistence, and triggers event publication after successful transactions."
+    },
+    {
+      "name": "Review Domain Engine",
+      "type": "domain",
+      "responsibility": "Implements domain rules for field-level review decisions, comment updates, overall request approval or rejection, lifecycle consistency with the underlying submitted request, and immutability constraints after review finalization where applicable."
+    },
+    {
+      "name": "Review Repository",
+      "type": "persistence",
+      "responsibility": "Persists and retrieves review aggregates, per-field review decisions, and review audit entries with transactional consistency for business operations and compliance traceability."
+    },
+    {
+      "name": "Review Event Publisher",
+      "type": "messaging",
+      "responsibility": "Publishes domain events when review comments change and when a request is approved or rejected by the civil servant, and consumes submission lifecycle events to initialize, update, or invalidate review state as needed."
+    }
+  ],
+  "data_owned": [],
+  "consumed_events": [
+    "RequestSubmitted",
+    "RequestUpdated",
+    "RequestWithdrawn"
+  ],
+  "emitted_events": [
+    "RequestApprovedByCivilServant",
+    "RequestRejectedByCivilServant",
+    "RequestCommentChanged"
+  ],
+  "external_integrations": [],
+  "security_controls": [],
+  "observability": [],
+  "service_purpose": "Allows a Civil Servant to review submitted request fields, provide per-field comments, confirm or reject individual fields, record an overall review comment, and finalize the review outcome for a submitted request in alignment with the request submission lifecycle.",
+  "open_questions": [],
+  "confidence": "medium"
+}

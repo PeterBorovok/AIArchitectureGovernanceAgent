@@ -118,6 +118,15 @@ def run(state: AgentState) -> AgentState:
     if not proposal.get("service_type"):
         proposal["service_type"] = "domain_service"
 
+    proposal["data_owned"] = _ensure_data_owned(
+        proposal=proposal,
+        service_name=state.current_service or "",
+        baseline_service=baseline,
+        extracted_service=extracted,
+    )
+
+    print("DEBUG final data_owned:", json.dumps(proposal.get("data_owned", []), indent=2, ensure_ascii=False))
+
     state.current_proposal = proposal
     return state
 
@@ -235,6 +244,156 @@ def _normalize_data_owned(values: Any) -> list[dict]:
                 )
 
     return normalized
+
+
+def _ensure_data_owned(
+    proposal: dict,
+    service_name: str,
+    baseline_service: dict,
+    extracted_service: dict,
+) -> list[dict]:
+    current = _normalize_data_owned(proposal.get("data_owned", []))
+    if current:
+        return _fill_missing_data_owned_fields(current, service_name)
+
+    candidates = []
+
+    # 1. Strong candidates from known keys
+    for source in [baseline_service, extracted_service]:
+        for key in ["data_owned", "entities", "domain_entities", "owned_entities", "records"]:
+            value = source.get(key, [])
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(item, str) and item.strip():
+                        candidates.append(item.strip())
+                    elif isinstance(item, dict):
+                        name = str(
+                            item.get("entity_name")
+                            or item.get("name")
+                            or item.get("entity")
+                            or ""
+                        ).strip()
+                        if name:
+                            candidates.append(name)
+
+    # 2. Derive from service name
+    if not candidates:
+        derived = _derive_entities_from_service_name(service_name)
+        candidates.extend(derived)
+
+    # 3. Last-resort default
+    if not candidates:
+        base_name = (service_name or "Domain").replace(" Service", "").strip() or "Domain"
+        candidates = [base_name]
+
+    unique_candidates = []
+    seen = set()
+    for item in candidates:
+        key = item.lower()
+        if key not in seen:
+            seen.add(key)
+            unique_candidates.append(item)
+
+    result = []
+    for entity_name in unique_candidates[:3]:
+        result.append(
+            {
+                "entity_name": entity_name,
+                "description": _default_entity_description(entity_name, service_name),
+                "storage_type": _suggest_storage_type(service_name, entity_name),
+            }
+        )
+
+    return result
+
+
+def _fill_missing_data_owned_fields(data_owned: list[dict], service_name: str) -> list[dict]:
+    result = []
+    for item in data_owned:
+        entity_name = str(item.get("entity_name", "")).strip()
+        description = str(item.get("description", "")).strip()
+        storage_type = str(item.get("storage_type", "")).strip()
+
+        if not entity_name:
+            continue
+
+        if not description:
+            description = _default_entity_description(entity_name, service_name)
+
+        if not storage_type:
+            storage_type = _suggest_storage_type(service_name, entity_name)
+
+        result.append(
+            {
+                "entity_name": entity_name,
+                "description": description,
+                "storage_type": storage_type,
+            }
+        )
+
+    return result
+
+
+def _derive_entities_from_service_name(service_name: str) -> list[str]:
+    base = (service_name or "").replace(" Service", "").strip()
+    if not base:
+        return []
+
+    known = {
+        "Process Definition": [
+            "ProcessDefinition",
+            "ProcessSchema",
+            "ValidationRuleSet",
+        ],
+        "Submission": [
+            "Submission",
+            "SubmissionAttachment",
+            "SubmissionStatus",
+        ],
+        "Request Submission": [
+            "RequestSubmission",
+            "SubmissionAttachment",
+            "SubmissionStatus",
+        ],
+        "Document": [
+            "Document",
+            "DocumentVersion",
+            "DocumentMetadata",
+        ],
+        "User Profile": [
+            "UserProfile",
+            "UserPreference",
+        ],
+        "Notification": [
+            "NotificationTemplate",
+            "NotificationDelivery",
+        ],
+    }
+
+    for key, values in known.items():
+        if key.lower() in base.lower():
+            return values
+
+    token = "".join(ch for ch in base.title() if ch.isalnum())
+    if not token:
+        token = "Domain"
+
+    return [token, f"{token}Record"]
+
+
+def _default_entity_description(entity_name: str, service_name: str) -> str:
+    base = (service_name or "the service").replace(" Service", "").strip()
+    return f"Primary {entity_name} data owned and managed by the {base} service."
+
+
+def _suggest_storage_type(service_name: str, entity_name: str) -> str:
+    name = f"{service_name} {entity_name}".lower()
+
+    if any(word in name for word in ["event", "log", "audit", "trace"]):
+        return "DynamoDB"
+    if any(word in name for word in ["schema", "definition", "submission", "document", "profile", "rule"]):
+        return "Aurora"
+    return "Aurora"
 
 
 def _extract_responsibility(component: dict) -> str:

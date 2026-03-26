@@ -1,0 +1,12 @@
+{
+  "service_name": "Request Submission Service",
+  "consumed_events": [
+    "ProcessSchemaPublished",
+    "ProcessSchemaUpdated"
+  ],
+  "emitted_events": [
+    "RequestSubmitted",
+    "RequestUpdated",
+    "RequestWithdrawn"
+  ]
+}

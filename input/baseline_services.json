@@ -8,5 +8,27 @@
     ],
     "consumes": [],
     "expected_internal_design": true
+  },
+  {
+    "name": "Request Submission Service",
+    "description": "Manages the submission process, generates UI using compiled bundles, Validates input using shared validation engine. Stores request (=submissions)",
+    "emits": [
+      "RequestSubmitted",
+      "RequestUpdated",
+      "RequestWithdrawn"
+    ],
+    "consumes": [],
+    "expected_internal_design": true
+  },
+  {
+    "name": "Civil Servant Review Service",
+    "description": "Service that allows CivilServant to review the fields of request, submit comments Per-field or confirmqreject per field and an overall comment fo request.",
+    "emits": [
+      "RequestApprovedByCivilServant",
+      "RequestRejectedByCivilServant",
+      "RequestCommentChanged"
+    ],
+    "consumes": [],
+    "expected_internal_design": true
   }
 ]

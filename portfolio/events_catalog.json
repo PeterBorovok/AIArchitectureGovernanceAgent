@@ -1,3 +1,70 @@
 {
-  "events": []
+  "events": [
+    {
+      "event_name": "ProcessSchemaPublished",
+      "emitted_by": [
+        "Process Definition Service"
+      ],
+      "consumed_by": [
+        "Request Submission Service"
+      ]
+    },
+    {
+      "event_name": "ProcessSchemaUpdated",
+      "emitted_by": [
+        "Process Definition Service"
+      ],
+      "consumed_by": [
+        "Request Submission Service"
+      ]
+    },
+    {
+      "event_name": "RequestSubmitted",
+      "emitted_by": [
+        "Request Submission Service"
+      ],
+      "consumed_by": [
+        "Civil Servant Review Service"
+      ]
+    },
+    {
+      "event_name": "RequestUpdated",
+      "emitted_by": [
+        "Request Submission Service"
+      ],
+      "consumed_by": [
+        "Civil Servant Review Service"
+      ]
+    },
+    {
+      "event_name": "RequestWithdrawn",
+      "emitted_by": [
+        "Request Submission Service"
+      ],
+      "consumed_by": [
+        "Civil Servant Review Service"
+      ]
+    },
+    {
+      "event_name": "RequestApprovedByCivilServant",
+      "emitted_by": [
+        "Civil Servant Review Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "RequestRejectedByCivilServant",
+      "emitted_by": [
+        "Civil Servant Review Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "RequestCommentChanged",
+      "emitted_by": [
+        "Civil Servant Review Service"
+      ],
+      "consumed_by": []
+    }
+  ]
 }

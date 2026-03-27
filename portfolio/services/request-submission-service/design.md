@@ -1,7 +1,7 @@
 # Request Submission Service
 
 ## Purpose
-Manages the end-user request submission process by providing submission experience metadata and compiled UI bundle references, validating submitted input through the shared validation engine, persisting request submissions, and handling request update and withdrawal actions. For new submissions, the service resolves the active process schema and associated validation configuration from locally projected process-definition metadata. For existing submissions, it preserves version pinning to the schema, validation configuration, UI bundle metadata, and labels assigned at creation time unless an explicit migration policy is introduced.
+Manages the government process request submission lifecycle by accepting, validating, storing, updating, and withdrawing citizen or staff submissions. The service renders submission experiences using compiled UI bundles and process definitions obtained from the definition domain, validates submitted payloads through a shared validation engine, persists request submissions and their revision history, and emits lifecycle events for downstream processing.
 
 ## Bounded Context
 Request Submission
@@ -10,19 +10,18 @@ Request Submission
 domain
 
 ## Internal Components
-- **Request Submission API** (api): Exposes authenticated endpoints to create, retrieve, update, and withdraw request submissions, and returns submission metadata plus compiled UI bundle references and presentation metadata required by clients to render the submission experience for the submission's assigned schema version.
-- **Submission Application Service** (application): Coordinates submission use cases end to end by resolving the active process schema projection for new submissions, loading the pinned schema and validation context for existing submissions, invoking the shared validation engine, applying lifecycle actions, persisting changes, recording audit information, and triggering reliable event publication. It also orchestrates projection refresh handling when process schema events are consumed so future submissions use the latest active metadata without altering already-created submissions.
-- **Submission Domain Service** (domain): Enforces business rules for submission lifecycle transitions, input acceptance, update eligibility, withdrawal eligibility, and version pinning. Ensures new submissions are created against the currently active projected process schema, validation configuration, UI bundle metadata, and labels, while existing submissions continue to use their originally assigned versioned context unless an explicit migration policy is supported.
-- **Submission Repository** (persistence): Stores and retrieves request submissions, versioned submission payloads, pinned process schema and validation references, presentation metadata references, and immutable audit records from the service-owned relational datastore.
-- **Submission Event Publisher** (messaging): Publishes request lifecycle domain events with reliable delivery after successful persistence of submission, update, and withdrawal actions.
-- **Process Schema Projection Consumer** (messaging): Consumes process-definition events to maintain a local projection of active process schema metadata, schema content, validation configuration, compiled UI bundle metadata, and labels needed to initialize new submissions and support submission rendering without runtime coupling to the upstream process-definition service.
+- **Request Submission API** (api): Exposes government-facing submission endpoints to start a submission, retrieve an existing submission, update draft or in-progress submission data, submit a request, withdraw a submitted request when allowed, and retrieve submission form runtime metadata required by the client. The API does not own process or UI definitions; it fetches the applicable compiled bundle reference and submission definition view through the application layer from the definition service.
+- **Submission Application Service** (application): Orchestrates submission use cases by resolving the active process definition and compiled bundle reference from the definition service, invoking the shared validation engine, enforcing lifecycle rules, coordinating persistence of submissions and revisions, and triggering event publication after successful state changes.
+- **Request Submission Domain Service** (domain): Implements core business rules for submission lifecycle management, including draft creation, payload update eligibility, final submission checks, withdrawal authorization rules, status transitions, and consistency of definition version association.
+- **Submission Repository** (persistence): Persists and retrieves request submission aggregates, revision history, and references to external definition and bundle versions from the service-owned relational store.
+- **Submission Event Publisher** (messaging): Publishes RequestSubmitted, RequestUpdated, and RequestWithdrawn events to the platform event bus after transactional persistence succeeds, using reliable delivery patterns such as an outbox.
 
 ## Data Owned
 - None
 
 ## Consumed Events
-- ProcessSchemaPublished
-- ProcessSchemaUpdated
+- ProcessDefinitionPublished
+- CompiledUiBundlePublished
 
 ## Emitted Events
 - RequestSubmitted
@@ -33,19 +32,15 @@ domain
 - None
 
 ## Security Controls
-- Authenticated API access using platform identity controls with role-based and subject-scoped authorization for submission creation, retrieval, update, and withdrawal.
-- Authorization checks to ensure callers can access and modify only submissions they are permitted to manage.
-- Immutable audit logging for submission lifecycle actions, validation outcomes, schema/version assignments, and withdrawal operations.
-- Encryption in transit for API, messaging, and validation-engine integration traffic, and encryption at rest for Aurora data.
-- Input validation and payload sanitization prior to persistence, validation processing, and event publication.
-
-## Observability
-- Structured logs for submission lifecycle actions, validation engine calls, process schema event consumption, projection updates, and failure reasons with correlation identifiers.
-- Metrics for submission create/update/withdraw volumes, validation success/failure counts, API latency/error rates, event consumption lag, and process schema projection freshness.
-- Distributed tracing across API requests, application orchestration, validation engine calls, database operations, and event publication/consumption flows.
-
-## Open Questions
 - None
 
+## Observability
+- None
+
+## Open Questions
+- Which exact event names does the definition service publish in the target platform for process definition and compiled UI bundle availability, and should they map directly to ProcessDefinitionPublished and CompiledUiBundlePublished or require renaming?
+- Should the API explicitly support draft creation as a separate endpoint from final submission, or is submission creation always treated as an immediately persisted draft in the current government process model?
+- Are there regulated retention or legal-hold requirements that require longer-term archival or immutable storage in addition to Aurora-backed revision history?
+
 ## Confidence
-medium
+high

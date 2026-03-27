@@ -14,6 +14,21 @@
       "name": "Civil Servant Review Service",
       "status": "approved",
       "path": "portfolio/services/civil-servant-review-service/service.json"
+    },
+    {
+      "name": "Approval Workflow Service",
+      "status": "approved",
+      "path": "portfolio/services/approval-workflow-service/service.json"
+    },
+    {
+      "name": "Notification Service",
+      "status": "approved",
+      "path": "portfolio/services/notification-service/service.json"
+    },
+    {
+      "name": "Scanning System Service (separate account)",
+      "status": "approved",
+      "path": "portfolio/services/scanning-system-service-(separate-account)/service.json"
     }
   ]
 }

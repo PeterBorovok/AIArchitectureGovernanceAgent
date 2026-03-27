@@ -1,8 +1,8 @@
 {
   "service_name": "Request Submission Service",
   "consumed_events": [
-    "ProcessSchemaPublished",
-    "ProcessSchemaUpdated"
+    "ProcessDefinitionPublished",
+    "CompiledUiBundlePublished"
   ],
   "emitted_events": [
     "RequestSubmitted",

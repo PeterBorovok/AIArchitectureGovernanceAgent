@@ -1,34 +1,43 @@
 [
   {
-    "name": "Process Definition Service",
-    "description": "Stores schemas and rules for process(es), Provides validation config, UI bundle, and label configuration.",
+    "name": "Approval Workflow Service",
+    "description": "Multi step approvals flow, costume configured for each process, managed using step functions infrastructure of AWS.",
     "emits": [
-      "ProcessSchemaPublished",
-      "ProcessSchemaUpdated"
+      "RequestApproved",
+      "RequestRejected",
+      "ApprovalStepCompleted"
     ],
-    "consumes": [],
-    "expected_internal_design": true
-  },
-  {
-    "name": "Request Submission Service",
-    "description": "Manages the submission process, generates UI using compiled bundles, Validates input using shared validation engine. Stores request (=submissions)",
-    "emits": [
-      "RequestSubmitted",
-      "RequestUpdated",
-      "RequestWithdrawn"
-    ],
-    "consumes": [],
-    "expected_internal_design": true
-  },
-  {
-    "name": "Civil Servant Review Service",
-    "description": "Service that allows CivilServant to review the fields of request, submit comments Per-field or confirmqreject per field and an overall comment fo request.",
-    "emits": [
+    "consumes": [
       "RequestApprovedByCivilServant",
-      "RequestRejectedByCivilServant",
-      "RequestCommentChanged"
+      "ApprovalStepCompleted (if event driven between steps)"
     ],
-    "consumes": [],
+    "expected_internal_design": true
+  },
+  {
+    "name": "Notification Service",
+    "description": "Listens to events, Sends email or SMS via SendGrid",
+    "emits": [],
+    "consumes": [
+      "RequestSubmitted",
+      "RequestRejectedByCivilServant",
+      "RequestRejectedDueToMalware",
+      "RequestReturnedForFixes",
+      "RequestApproved",
+      "RequestStatusChanged",
+      "RequestUpdated"
+    ],
+    "expected_internal_design": true
+  },
+  {
+    "name": "Scanning System Service (separate account)",
+    "description": "Manages scan request using Scanning workers, OPSWAT engine cluster, emit events according to scan results.",
+    "emits": [
+      "FileScannedClean",
+      "FileScannedInfected"
+    ],
+    "consumes": [
+      "ScanRequested"
+    ],
     "expected_internal_design": true
   }
 ]

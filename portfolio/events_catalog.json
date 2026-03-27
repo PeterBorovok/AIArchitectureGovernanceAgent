@@ -24,7 +24,8 @@
         "Request Submission Service"
       ],
       "consumed_by": [
-        "Civil Servant Review Service"
+        "Civil Servant Review Service",
+        "Notification Service"
       ]
     },
     {
@@ -33,7 +34,8 @@
         "Request Submission Service"
       ],
       "consumed_by": [
-        "Civil Servant Review Service"
+        "Civil Servant Review Service",
+        "Notification Service"
       ]
     },
     {
@@ -50,14 +52,18 @@
       "emitted_by": [
         "Civil Servant Review Service"
       ],
-      "consumed_by": []
+      "consumed_by": [
+        "Approval Workflow Service"
+      ]
     },
     {
       "event_name": "RequestRejectedByCivilServant",
       "emitted_by": [
         "Civil Servant Review Service"
       ],
-      "consumed_by": []
+      "consumed_by": [
+        "Notification Service"
+      ]
     },
     {
       "event_name": "RequestCommentChanged",
@@ -65,6 +71,113 @@
         "Civil Servant Review Service"
       ],
       "consumed_by": []
+    },
+    {
+      "event_name": "ProcessDefinitionPublished",
+      "emitted_by": [],
+      "consumed_by": [
+        "Request Submission Service"
+      ]
+    },
+    {
+      "event_name": "CompiledUiBundlePublished",
+      "emitted_by": [],
+      "consumed_by": [
+        "Request Submission Service"
+      ]
+    },
+    {
+      "event_name": "RequestApproved",
+      "emitted_by": [
+        "Approval Workflow Service"
+      ],
+      "consumed_by": [
+        "Notification Service"
+      ]
+    },
+    {
+      "event_name": "RequestRejected",
+      "emitted_by": [
+        "Approval Workflow Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "ApprovalStepCompleted",
+      "emitted_by": [
+        "Approval Workflow Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "ApprovalStepCompleted (if event driven between steps)",
+      "emitted_by": [],
+      "consumed_by": [
+        "Approval Workflow Service"
+      ]
+    },
+    {
+      "event_name": "NotificationCreated",
+      "emitted_by": [
+        "Notification Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "NotificationSent",
+      "emitted_by": [
+        "Notification Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "NotificationDeliveryFailed",
+      "emitted_by": [
+        "Notification Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "RequestRejectedDueToMalware",
+      "emitted_by": [],
+      "consumed_by": [
+        "Notification Service"
+      ]
+    },
+    {
+      "event_name": "RequestReturnedForFixes",
+      "emitted_by": [],
+      "consumed_by": [
+        "Notification Service"
+      ]
+    },
+    {
+      "event_name": "RequestStatusChanged",
+      "emitted_by": [],
+      "consumed_by": [
+        "Notification Service"
+      ]
+    },
+    {
+      "event_name": "FileScannedClean",
+      "emitted_by": [
+        "Scanning System Service (separate account)"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "FileScannedInfected",
+      "emitted_by": [
+        "Scanning System Service (separate account)"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "ScanRequested",
+      "emitted_by": [],
+      "consumed_by": [
+        "Scanning System Service (separate account)"
+      ]
     }
   ]
 }

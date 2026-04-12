@@ -1,0 +1,82 @@
+[
+   {
+    "name": "Airs - AI Reponse Service",
+    "description": "Service that manages the AI suggestion generation, based ob hystoric data, policy papers, local laws and the submitted request. This component can retrieve data basen on the properties of the authority (tenant) to make conclusions made on similarity with other authorities.",
+    "emits": [
+      "AIResponseGenerated",
+      "AIRecomendationGenerated"
+    ],
+    "consumes": [
+      "RequestSubmitted",
+      "AttahmentsScanSucceeded",
+      "AttahmentsScanFailedOrInfected",
+      "RequestReadyForCivilServantReview",
+      "CivilServantReviewCompleted",
+      "ApprovalWorkflowCompleted",
+      "ProcessDefinitionPublished",
+      "KnowledgeDocumentPublished",
+      "KnowledgeDocumentUpdated",
+      "PolicyUpdated",
+      "GuardrailsUpdated"
+    ],
+    "expected_internal_design": true
+  },
+  {
+    "name": "Document Service",
+    "description": "Service that manages documents and their versions in the platform including long term storage of attachments, knowledge documents, policy documentation, committee decisions etc.",
+    "emits": [
+      "DocumentRegistered",
+      "DocumentVersionCreated",
+      "DocumentLinkedToSubmission",
+      "DocumentMetadataUpdated",
+      "DocumentPublished",
+      "DocumentArchived",
+      "DocumentReadyForIndexing",
+      "DocumentBlocked"
+    ],
+    "consumes": [
+      "FileScanSucceeded",
+      "FileScanFailedOrInfected",
+      "RequestSubmitted",
+      "ProcessDefinitionPublished",
+      "CivilServantReviewCompleted",
+      "ApprovalWorkflowCompleted"
+    ],
+    "expected_internal_design": true
+  },
+  {
+    "name": "Shared Data Service",
+    "description": "Hold shared data usually static or one that changes rarely and used by different services.",
+    "emits": [
+      "DataChanged",
+      "DataAdded",
+      "DataDepricated"
+    ],
+    "consumes": [
+      "DataUpdateRequested"
+    ],
+    "expected_internal_design": true
+  },
+  {
+    "name": "Task Service",
+    "description": "Optional service that handles generation of tasks based on process definition and submitted requests, according to the step of the request.",
+    "emits": [
+      "TaskAdded",
+      "TaskUpdated",
+      "TaskDepricated"
+    ],
+    "consumes": [
+      "SubmissionStatusChanged"
+    ],
+    "expected_internal_design": true
+  },
+  {
+    "name": "SubmissionQueryService",
+    "description": "Submission view, Consumes: cruital events and updates shallow view, One table to hold the truth for users",
+    "emits": [],
+    "consumes": [
+      "cruital events and updates shallow view, One table to hold the truth for users"
+    ],
+    "expected_internal_design": true
+  }
+]

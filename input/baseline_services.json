@@ -1,42 +1,14 @@
 [
-  {
-    "name": "Approval Workflow Service",
-    "description": "Multi step approvals flow, costume configured for each process, managed using step functions infrastructure of AWS.",
+    {
+    "name": "Shared Data Service",
+    "description": "Hold shared data usually static or one that changes rarely and used by different services.",
     "emits": [
-      "RequestApproved",
-      "RequestRejected",
-      "ApprovalStepCompleted"
+      "DataChanged",
+      "DataAdded",
+      "DataDepricated"
     ],
     "consumes": [
-      "RequestApprovedByCivilServant",
-      "ApprovalStepCompleted (if event driven between steps)"
-    ],
-    "expected_internal_design": true
-  },
-  {
-    "name": "Notification Service",
-    "description": "Listens to events, Sends email or SMS via SendGrid",
-    "emits": [],
-    "consumes": [
-      "RequestSubmitted",
-      "RequestRejectedByCivilServant",
-      "RequestRejectedDueToMalware",
-      "RequestReturnedForFixes",
-      "RequestApproved",
-      "RequestStatusChanged",
-      "RequestUpdated"
-    ],
-    "expected_internal_design": true
-  },
-  {
-    "name": "Scanning System Service (separate account)",
-    "description": "Manages scan request using Scanning workers, OPSWAT engine cluster, emit events according to scan results.",
-    "emits": [
-      "FileScannedClean",
-      "FileScannedInfected"
-    ],
-    "consumes": [
-      "ScanRequested"
+      "DataUpdateRequested"
     ],
     "expected_internal_design": true
   }

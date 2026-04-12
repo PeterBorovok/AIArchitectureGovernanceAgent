@@ -1,0 +1,20 @@
+{
+  "service_name": "Airs - AI Reponse Service",
+  "consumed_events": [
+    "RequestSubmitted",
+    "AttahmentsScanSucceeded",
+    "AttahmentsScanFailedOrInfected",
+    "RequestReadyForCivilServantReview",
+    "CivilServantReviewCompleted",
+    "ApprovalWorkflowCompleted",
+    "ProcessDefinitionPublished",
+    "KnowledgeDocumentPublished",
+    "KnowledgeDocumentUpdated",
+    "PolicyUpdated",
+    "GuardrailsUpdated"
+  ],
+  "emitted_events": [
+    "AIResponseGenerated",
+    "AIRecomendationGenerated"
+  ]
+}

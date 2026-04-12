@@ -25,7 +25,10 @@
       ],
       "consumed_by": [
         "Civil Servant Review Service",
-        "Notification Service"
+        "Notification Service",
+        "Attachment and Scanning Service",
+        "Airs - AI Reponse Service",
+        "Document Service"
       ]
     },
     {
@@ -76,7 +79,9 @@
       "event_name": "ProcessDefinitionPublished",
       "emitted_by": [],
       "consumed_by": [
-        "Request Submission Service"
+        "Request Submission Service",
+        "Airs - AI Reponse Service",
+        "Document Service"
       ]
     },
     {
@@ -163,20 +168,219 @@
       "emitted_by": [
         "Scanning System Service (separate account)"
       ],
-      "consumed_by": []
+      "consumed_by": [
+        "Attachment and Scanning Service"
+      ]
     },
     {
       "event_name": "FileScannedInfected",
       "emitted_by": [
         "Scanning System Service (separate account)"
       ],
-      "consumed_by": []
+      "consumed_by": [
+        "Attachment and Scanning Service"
+      ]
     },
     {
       "event_name": "ScanRequested",
-      "emitted_by": [],
+      "emitted_by": [
+        "Attachment and Scanning Service"
+      ],
       "consumed_by": [
         "Scanning System Service (separate account)"
+      ]
+    },
+    {
+      "event_name": "RequestReadyForCivilServantReview",
+      "emitted_by": [
+        "Attachment and Scanning Service"
+      ],
+      "consumed_by": [
+        "Airs - AI Reponse Service"
+      ]
+    },
+    {
+      "event_name": "AttachmentScanCompleted",
+      "emitted_by": [
+        "Attachment and Scanning Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "AttachmentScanFailedOrInfected",
+      "emitted_by": [
+        "Attachment and Scanning Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "AIResponseGenerated",
+      "emitted_by": [
+        "Airs - AI Reponse Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "AIRecomendationGenerated",
+      "emitted_by": [
+        "Airs - AI Reponse Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "AttahmentsScanSucceeded",
+      "emitted_by": [],
+      "consumed_by": [
+        "Airs - AI Reponse Service"
+      ]
+    },
+    {
+      "event_name": "AttahmentsScanFailedOrInfected",
+      "emitted_by": [],
+      "consumed_by": [
+        "Airs - AI Reponse Service"
+      ]
+    },
+    {
+      "event_name": "CivilServantReviewCompleted",
+      "emitted_by": [],
+      "consumed_by": [
+        "Airs - AI Reponse Service",
+        "Document Service"
+      ]
+    },
+    {
+      "event_name": "ApprovalWorkflowCompleted",
+      "emitted_by": [],
+      "consumed_by": [
+        "Airs - AI Reponse Service",
+        "Document Service"
+      ]
+    },
+    {
+      "event_name": "KnowledgeDocumentPublished",
+      "emitted_by": [],
+      "consumed_by": [
+        "Airs - AI Reponse Service"
+      ]
+    },
+    {
+      "event_name": "KnowledgeDocumentUpdated",
+      "emitted_by": [],
+      "consumed_by": [
+        "Airs - AI Reponse Service"
+      ]
+    },
+    {
+      "event_name": "PolicyUpdated",
+      "emitted_by": [],
+      "consumed_by": [
+        "Airs - AI Reponse Service"
+      ]
+    },
+    {
+      "event_name": "GuardrailsUpdated",
+      "emitted_by": [],
+      "consumed_by": [
+        "Airs - AI Reponse Service"
+      ]
+    },
+    {
+      "event_name": "DocumentRegistered",
+      "emitted_by": [
+        "Document Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "DocumentVersionCreated",
+      "emitted_by": [
+        "Document Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "DocumentLinkedToSubmission",
+      "emitted_by": [
+        "Document Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "DocumentMetadataUpdated",
+      "emitted_by": [
+        "Document Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "DocumentPublished",
+      "emitted_by": [
+        "Document Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "DocumentArchived",
+      "emitted_by": [
+        "Document Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "DocumentReadyForIndexing",
+      "emitted_by": [
+        "Document Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "DocumentBlocked",
+      "emitted_by": [
+        "Document Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "FileScanSucceeded",
+      "emitted_by": [],
+      "consumed_by": [
+        "Document Service"
+      ]
+    },
+    {
+      "event_name": "FileScanFailedOrInfected",
+      "emitted_by": [],
+      "consumed_by": [
+        "Document Service"
+      ]
+    },
+    {
+      "event_name": "DataChanged",
+      "emitted_by": [
+        "Shared Data Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "DataAdded",
+      "emitted_by": [
+        "Shared Data Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "DataDepricated",
+      "emitted_by": [
+        "Shared Data Service"
+      ],
+      "consumed_by": []
+    },
+    {
+      "event_name": "DataUpdateRequested",
+      "emitted_by": [],
+      "consumed_by": [
+        "Shared Data Service"
       ]
     }
   ]

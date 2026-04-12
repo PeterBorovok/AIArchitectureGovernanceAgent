@@ -1,7 +1,7 @@
 # Shared Data Service
 
 ## Purpose
-Manages canonical shared reference data that is static or changes infrequently and is reused by multiple services across the platform. The service governs dataset lifecycle, authority or global scope, item maintenance, version publication, and distribution of versioned snapshots and deltas so downstream services can build accurate local read models.
+Manages shared reference data that is relatively static or changes infrequently and is consumed by multiple services across the platform. Provides controlled APIs and event-driven propagation for creation, update, deprecation, and retrieval of shared data records.
 
 ## Bounded Context
 Shared Reference Data Management
@@ -10,13 +10,11 @@ Shared Reference Data Management
 domain
 
 ## Internal Components
-- **Shared Data API** (api): Exposes query and administrative endpoints for retrieving shared datasets and for creating, updating, versioning, publishing, and deprecating datasets and items.
-- **Shared Data Application Service** (application): Coordinates shared data use cases, validates requests, applies authorization and scope checks, orchestrates persistence and cache updates, and triggers publication of versioned change events.
-- **Shared Data Domain Manager** (domain): Enforces business rules for dataset ownership, global versus authority-specific scope, item uniqueness, lifecycle transitions, version creation, publication eligibility, and deprecation handling.
-- **Shared Data Repository** (persistence): Persists and retrieves authoritative shared datasets, dataset versions, items, and audit records from the primary relational store.
-- **Shared Data Read Model / Cache** (persistence): Provides low-latency access to frequently requested shared datasets using optimized read storage and caching for published versions and commonly queried items.
-- **Shared Data Event Handler** (messaging): Consumes explicit dataset-aware update requests from the event bus, maps them to application use cases, and ensures reliable processing of requested shared data changes.
-- **Shared Data Distribution Publisher** (messaging): Publishes versioned snapshots and delta updates of shared datasets for downstream services to build local read models.
+- **Shared Data API** (api): Exposes synchronous endpoints for querying shared data and submitting create, update, and deprecation requests for shared reference data records.
+- **Shared Data Application Service** (application): Coordinates use cases for retrieving, adding, updating, and deprecating shared data, enforces workflow rules, and orchestrates persistence and event publication.
+- **Shared Data Domain Manager** (domain): Applies domain rules for shared reference data lifecycle, including validation, uniqueness, effective status handling, and deprecation semantics.
+- **Shared Data Repository** (persistence): Persists and retrieves shared data entities, versions, and metadata from durable storage with support for lookup by type, key, and status.
+- **Shared Data Event Handler** (messaging): Consumes data update requests and publishes shared data lifecycle events to notify downstream services of additions, changes, and deprecations.
 
 ## Data Owned
 - None
@@ -33,14 +31,19 @@ domain
 - None
 
 ## Security Controls
-- None
+- Role-based access control for create, update, and deprecate operations, with read access scoped according to service and user permissions.
+- Authentication and authorization enforced at API boundaries for all management operations.
+- Audit logging of all create, update, and deprecation actions including actor, timestamp, and change summary.
+- Encryption in transit for API and messaging traffic and encryption at rest for persisted shared data.
 
 ## Observability
-- None
+- Structured application logs for API requests, validation outcomes, persistence actions, and event publication/consumption.
+- Metrics for request rates, latency, error rates, event processing throughput, and failed update/deprecation attempts.
+- Distributed tracing across API, application, persistence, and messaging components for end-to-end lifecycle operations.
+- Audit-oriented monitoring dashboards for shared data changes and deprecation activity.
 
 ## Open Questions
-- Reviewer requested explicit dataset-aware and versioned consumed events, but the baseline defines only DataUpdateRequested as the consumed event. Should the baseline consumed event be retained as the canonical contract with a stricter payload schema, or should it be formally expanded into explicit events such as SharedDataSetCreatedRequested, SharedDataItemAddedRequested, SharedDataItemUpdatedRequested, SharedDataItemDeprecatedRequested, SharedDataSetVersionPublishRequested, and SharedDataSetDeprecatedRequested?
-- Reviewer requested explicit emitted events SharedDataSetCreated, SharedDataSetVersionPublished, SharedDataItemAdded, SharedDataItemUpdated, SharedDataItemDeprecated, and SharedDataSetDeprecated. The baseline emitted events are DataChanged, DataAdded, and DataDepricated. Should the service emit both baseline events and the explicit dataset-aware events, or should the baseline event catalog be officially revised?
+- None
 
 ## Confidence
 medium

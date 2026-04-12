@@ -1,0 +1,62 @@
+{
+  "service_name": "Scanning System Service (separate account)",
+  "purpose": "Manages malware scan requests in an isolated scanning account by consuming ScanRequested events, securely staging files for scanning, orchestrating scanning workers that execute scanning tasks using the OPSWAT engine cluster, determining final scan verdicts, recording scan lifecycle metadata, and emitting scan result events.",
+  "bounded_context": "Malware scanning orchestration within a dedicated scanning account, including scan request intake, secure file staging, worker-based scan execution using OPSWAT engines, verdict determination, and publication of scan outcome events.",
+  "service_type": "domain",
+  "internal_components": [
+    {
+      "name": "Scan Operations API",
+      "type": "api",
+      "responsibility": "Provides internal operational endpoints to query scan job status, inspect scan outcomes, and support controlled retry and troubleshooting workflows for failed or stuck scans."
+    },
+    {
+      "name": "Scan Orchestration Application",
+      "type": "application",
+      "responsibility": "Consumes ScanRequested events, validates request context, creates scan jobs, coordinates secure staging and worker execution, manages scan state transitions, and triggers result finalization."
+    },
+    {
+      "name": "Scanning Worker Coordinator",
+      "type": "application",
+      "responsibility": "Allocates scan tasks to service-managed scanning workers, manages worker leases and execution windows, handles worker retries and timeout recovery, and ensures each requested file is processed exactly once in coordination with job state."
+    },
+    {
+      "name": "Scanning Worker Runtime",
+      "type": "application",
+      "responsibility": "Executes scanning tasks against staged files by invoking the OPSWAT engine cluster, collects raw engine responses, captures execution diagnostics, and returns normalized worker outcomes to the orchestration flow."
+    },
+    {
+      "name": "Verdict Evaluation Domain Service",
+      "type": "domain",
+      "responsibility": "Normalizes scanning worker and OPSWAT engine outputs, applies verdict rules, and determines whether the final scan result is clean or infected."
+    },
+    {
+      "name": "Scan Persistence Repository",
+      "type": "persistence",
+      "responsibility": "Persists scan jobs, execution attempts, scan results, and event publication state to support reliable processing, idempotency, auditability, and recovery."
+    },
+    {
+      "name": "Event Messaging Adapter",
+      "type": "messaging",
+      "responsibility": "Consumes ScanRequested events and publishes FileScannedClean and FileScannedInfected events with idempotent handling, retry support, and correlation metadata."
+    },
+    {
+      "name": "Secure File Staging Manager",
+      "type": "application",
+      "responsibility": "Manages isolated storage for inbound files, grants time-bounded worker access to staged artifacts, enforces retention and cleanup policies, and records artifact locations needed for scan execution and investigation."
+    }
+  ],
+  "data_owned": [],
+  "consumed_events": [
+    "ScanRequested"
+  ],
+  "emitted_events": [
+    "FileScannedClean",
+    "FileScannedInfected"
+  ],
+  "external_integrations": [],
+  "security_controls": [],
+  "observability": [],
+  "confidence": "high",
+  "service_purpose": "Manages malware scan requests in an isolated scanning account by consuming ScanRequested events, securely staging files for scanning, orchestrating scanning workers that perform scanning tasks using the OPSWAT engine cluster, determining final scan verdicts, recording scan lifecycle metadata, and emitting scan result events.",
+  "open_questions": []
+}

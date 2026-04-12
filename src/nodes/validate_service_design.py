@@ -74,10 +74,10 @@ def run(state: AgentState) -> AgentState:
         warnings.append("Proposal service_purpose may not reflect extracted description closely enough")
 
     bounded_context = proposal.get("bounded_context", "").strip()
-    component_names = " | ".join(
-        c.get("name", "") for c in components
+    component_names = " | ".join(c.get("name", "") for c in components).lower()
+    data_owned_text = " | ".join(
+        item.get("entity_name", "") for item in proposal.get("data_owned", [])
     ).lower()
-    data_owned_text = " | ".join(proposal.get("data_owned", [])).lower()
     purpose_text = service_purpose.lower()
 
     if service_name == "Process Definition Service":
@@ -102,8 +102,7 @@ def run(state: AgentState) -> AgentState:
         if any(marker in data_owned_text for marker in forbidden_doc_markers):
             issues.append("RequestSubmission Service proposal contains document-oriented owned data")
 
-    if not proposal.get("data_owned"):
-        warnings.append("Proposal has no declared owned data")
+    _validate_data_owned(proposal, issues, warnings)
 
     if not proposal.get("emitted_events") and not proposal.get("consumed_events"):
         warnings.append("Proposal has no emitted or consumed events")
@@ -144,8 +143,9 @@ def _normalize_proposal(proposal: dict) -> dict:
         normalized.get("internal_components", [])
     )
 
+    normalized["data_owned"] = _normalize_data_owned(normalized.get("data_owned", []))
+
     for field in [
-        "data_owned",
         "consumed_events",
         "emitted_events",
         "external_integrations",
@@ -180,6 +180,63 @@ def _normalize_components(components: list) -> list[dict]:
         )
 
     return normalized_components
+
+
+def _normalize_data_owned(values) -> list[dict]:
+    if not isinstance(values, list):
+        return []
+
+    normalized: list[dict] = []
+    for item in values:
+        if isinstance(item, dict):
+            entity_name = str(item.get("entity_name") or item.get("name") or "").strip()
+            description = str(item.get("description") or "").strip()
+            storage_type = str(item.get("storage_type") or item.get("storage") or "").strip()
+
+            if entity_name or description or storage_type:
+                normalized.append(
+                    {
+                        "entity_name": entity_name,
+                        "description": description,
+                        "storage_type": storage_type,
+                    }
+                )
+
+        elif isinstance(item, str):
+            value = item.strip()
+            if value:
+                normalized.append(
+                    {
+                        "entity_name": value,
+                        "description": "",
+                        "storage_type": "",
+                    }
+                )
+
+    return normalized
+
+
+def _validate_data_owned(proposal: dict, issues: list[str], warnings: list[str]) -> None:
+    data_owned = proposal.get("data_owned", [])
+
+    if not data_owned:
+        issues.append("Service must declare owned data entities")
+        return
+
+    for idx, item in enumerate(data_owned):
+        entity_name = item.get("entity_name", "").strip()
+        description = item.get("description", "").strip()
+        storage_type = item.get("storage_type", "").strip()
+
+        if not entity_name:
+            issues.append(f"data_owned[{idx}] is missing 'entity_name'")
+        if not description:
+            issues.append(f"data_owned[{idx}] is missing 'description'")
+        if not storage_type:
+            issues.append(f"data_owned[{idx}] is missing 'storage_type'")
+
+    if len(data_owned) == 1:
+        warnings.append("Proposal declares only one owned data entity")
 
 
 def _extract_responsibility(component: dict) -> str:

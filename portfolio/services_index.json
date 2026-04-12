@@ -4,6 +4,51 @@
       "name": "Process Definition Service",
       "status": "approved",
       "path": "portfolio/services/process-definition-service/service.json"
+    },
+    {
+      "name": "Request Submission Service",
+      "status": "approved",
+      "path": "portfolio/services/request-submission-service/service.json"
+    },
+    {
+      "name": "Civil Servant Review Service",
+      "status": "approved",
+      "path": "portfolio/services/civil-servant-review-service/service.json"
+    },
+    {
+      "name": "Approval Workflow Service",
+      "status": "approved",
+      "path": "portfolio/services/approval-workflow-service/service.json"
+    },
+    {
+      "name": "Notification Service",
+      "status": "approved",
+      "path": "portfolio/services/notification-service/service.json"
+    },
+    {
+      "name": "Scanning System Service (separate account)",
+      "status": "approved",
+      "path": "portfolio/services/scanning-system-service-(separate-account)/service.json"
+    },
+    {
+      "name": "Attachment and Scanning Service",
+      "status": "approved",
+      "path": "portfolio/services/attachment-and-scanning-service/service.json"
+    },
+    {
+      "name": "Airs - AI Reponse Service",
+      "status": "approved",
+      "path": "portfolio/services/airs---ai-reponse-service/service.json"
+    },
+    {
+      "name": "Document Service",
+      "status": "approved",
+      "path": "portfolio/services/document-service/service.json"
+    },
+    {
+      "name": "Shared Data Service",
+      "status": "approved",
+      "path": "portfolio/services/shared-data-service/service.json"
     }
   ]
 }

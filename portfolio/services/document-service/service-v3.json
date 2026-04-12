@@ -1,0 +1,203 @@
+{
+  "service_name": "Document Service",
+  "purpose": "Manages platform documents and their versions while providing high-scale retrieval capabilities for authority users, executives, downstream business services, and AI-based response generation. The service governs document metadata, lifecycle state, publication eligibility, document-to-business-object links, immutable binary storage, retrieval projections, and machine-oriented document packages for policy, knowledge, attachment, and decision-support use cases.",
+  "bounded_context": "Document Management and Document Retrieval",
+  "service_type": "domain",
+  "internal_components": [
+    {
+      "name": "Document Command API",
+      "type": "api",
+      "responsibility": "Exposes synchronous command endpoints for registering documents, creating document versions, updating metadata, publishing, archiving, blocking, linking documents to business artifacts, and requesting controlled binary access operations.",
+      "api_endpoints": [
+        "POST /documents",
+        "POST /documents/{documentId}/versions",
+        "PATCH /documents/{documentId}/metadata",
+        "POST /documents/{documentId}/publish",
+        "POST /documents/{documentId}/archive",
+        "POST /documents/{documentId}/block",
+        "POST /documents/{documentId}/unblock",
+        "POST /documents/{documentId}/links",
+        "DELETE /documents/{documentId}/links/{linkId}",
+        "POST /documents/{documentId}/download-token"
+      ]
+    },
+    {
+      "name": "Document Query API",
+      "type": "api",
+      "responsibility": "Exposes high-frequency retrieval endpoints for authority-scoped browsing, metadata lookup, filtered document search, policy and knowledge retrieval, bulk lookup, submission-linked retrieval, and AI-ready retrieval packages.",
+      "api_endpoints": [
+        "GET /documents/{documentId}",
+        "GET /documents/{documentId}/versions",
+        "GET /documents/{documentId}/links",
+        "GET /documents/search",
+        "GET /documents/filter",
+        "GET /documents/by-authority/{authorityId}",
+        "GET /documents/by-process/{processType}",
+        "GET /documents/by-submission/{submissionId}",
+        "GET /documents/policies",
+        "GET /documents/knowledge",
+        "GET /documents/{documentId}/content-view",
+        "POST /documents/bulk-get",
+        "POST /documents/bulk-metadata",
+        "POST /documents/retrieval-package",
+        "POST /documents/knowledge-bundle"
+      ]
+    },
+    {
+      "name": "Document Command Application Service",
+      "type": "application",
+      "responsibility": "Coordinates write-oriented document use cases, validates commands, enforces idempotency, orchestrates metadata persistence and binary registration, invokes domain policies for lifecycle and publication decisions, and publishes resulting document lifecycle events."
+    },
+    {
+      "name": "Document Retrieval Application Service",
+      "type": "application",
+      "responsibility": "Coordinates read-oriented retrieval flows, invokes domain-owned retrieval and eligibility rules, routes search and lookup requests to projection, cache, metadata, and binary-view sources, and shapes retrieval results for authority users, executives, downstream services, and AIRS."
+    },
+    {
+      "name": "Document Search Adapter",
+      "type": "application",
+      "responsibility": "Executes search, filtering, faceting, and ranked retrieval queries against denormalized document projections, maps effective domain retrieval criteria into OpenSearch queries, and returns optimized retrieval candidates for high-frequency document access scenarios."
+    },
+    {
+      "name": "Document Domain Engine",
+      "type": "domain",
+      "responsibility": "Implements business rules for document identity, version sequencing, metadata governance, lifecycle transitions, publish and archive eligibility, blocking rules, authority visibility, and document linking semantics."
+    },
+    {
+      "name": "Document Retrieval Policy Domain Service",
+      "type": "domain",
+      "responsibility": "Defines business-driven retrieval eligibility, authority and tenant scoping, document-type applicability, publication and archive visibility rules, policy and knowledge retrieval semantics, and ranking or inclusion constraints that govern which documents may participate in a given retrieval context."
+    },
+    {
+      "name": "Binary Access Manager",
+      "type": "domain",
+      "responsibility": "Controls issuance of time-limited binary access tokens or presigned retrieval references, validates binary access policies, enforces document and authority-level access constraints, and separates metadata retrieval from binary delivery concerns."
+    },
+    {
+      "name": "Document Event Handler",
+      "type": "messaging",
+      "responsibility": "Consumes platform events that affect document lifecycle, retrieval readiness, publication visibility, linked business context, and scan outcomes, invokes application and domain handling flows, and emits resulting document domain events."
+    },
+    {
+      "name": "Document Indexing and Projection Handler",
+      "type": "messaging",
+      "responsibility": "Builds and refreshes denormalized retrieval projections from document lifecycle and business events, prepares search documents for fast filtering and lookup, triggers cache refresh or invalidation, and keeps retrieval views aligned with authoritative document state."
+    },
+    {
+      "name": "Document Persistence",
+      "type": "persistence",
+      "responsibility": "Stores and retrieves authoritative document metadata, document version metadata, lifecycle state, publication state, storage references, checksums, link records, and audit-oriented relational data in owned transactional stores."
+    },
+    {
+      "name": "Document Binary Store",
+      "type": "persistence",
+      "responsibility": "Stores immutable binary document content for each document version in long-term object storage and preserves authoritative object references for controlled access and retention."
+    },
+    {
+      "name": "Document Search Projection Store",
+      "type": "persistence",
+      "responsibility": "Stores denormalized search and retrieval projections optimized for high-frequency filtering, faceted lookup, policy retrieval, authority-scoped browsing, and AI-ready contextual retrieval preparation."
+    },
+    {
+      "name": "Document Cache",
+      "type": "persistence",
+      "responsibility": "Caches hot document metadata, authority-scoped result sets, popular policy and knowledge retrieval responses, and short-lived machine-oriented retrieval bundles during peak seasonal demand."
+    }
+  ],
+  "data_owned": [
+    {
+      "entity_name": "Document",
+      "description": "Core document metadata aggregate containing document identity, type, authority context, ownership context, lifecycle status, publication state, archive state, blocking status, canonical metadata, and current version pointer.",
+      "storage_type": "Aurora"
+    },
+    {
+      "entity_name": "DocumentVersion",
+      "description": "Version metadata records for each document including version number, binary object location reference, checksum, scan status, creation metadata, immutability markers, extracted-content availability markers, and publication eligibility.",
+      "storage_type": "Aurora"
+    },
+    {
+      "entity_name": "DocumentLink",
+      "description": "Associations between documents and business artifacts such as submissions, process instances, approval workflows, review cases, policies, and authority-level knowledge collections.",
+      "storage_type": "Aurora"
+    },
+    {
+      "entity_name": "DocumentLifecycleAudit",
+      "description": "Audit-oriented history of key document state transitions and governance actions such as registration, version creation, metadata updates, publication, archival, blocking, unblocking, and link changes.",
+      "storage_type": "Aurora"
+    },
+    {
+      "entity_name": "DocumentBinaryObject",
+      "description": "Immutable binary document content for each uploaded version, retained for long-term storage with version-specific object keys and retention-oriented storage characteristics.",
+      "storage_type": "S3"
+    },
+    {
+      "entity_name": "DocumentRetrievalProjection",
+      "description": "Denormalized retrieval documents optimized for high-volume filtering, authority-scoped search, process-scoped lookup, policy retrieval, knowledge retrieval, and AI-ready contextual packaging.",
+      "storage_type": "OpenSearch"
+    },
+    {
+      "entity_name": "HotDocumentRetrievalCache",
+      "description": "Short-lived cached retrieval results, hot metadata lookups, authority-scoped document lists, popular policy sets, and machine-oriented document packages used to absorb burst traffic during seasonal peaks.",
+      "storage_type": "Redis"
+    }
+  ],
+  "consumed_events": [
+    "FileScanSucceeded",
+    "FileScanFailedOrInfected",
+    "RequestSubmitted",
+    "RequestUpdated",
+    "ProcessDefinitionPublished",
+    "CivilServantReviewCompleted",
+    "ApprovalWorkflowCompleted",
+    "ApprovalWorkflowRejected",
+    "AuthorityPolicyPublished",
+    "AuthorityPolicyArchived",
+    "KnowledgeDocumentIngested"
+  ],
+  "emitted_events": [
+    "DocumentRegistered",
+    "DocumentVersionCreated",
+    "DocumentLinkedToBusinessArtifact",
+    "DocumentMetadataUpdated",
+    "DocumentPublished",
+    "DocumentArchived",
+    "DocumentBlocked",
+    "DocumentUnblocked",
+    "DocumentReadyForRetrieval",
+    "DocumentRetrievalProjectionRefreshRequested",
+    "DocumentBinaryAccessRequested",
+    "DocumentContentViewAvailable"
+  ],
+  "external_integrations": [
+    {
+      "name": "Attachment and Scanning Service",
+      "integration_type": "event-driven",
+      "purpose": "Supplies file scan outcomes that determine version eligibility, publication readiness, and retrieval availability."
+    },
+    {
+      "name": "Submission Service",
+      "integration_type": "event-driven",
+      "purpose": "Provides submission lifecycle context used for linking documents to business requests and shaping retrieval views."
+    },
+    {
+      "name": "Process Definition Service",
+      "integration_type": "event-driven",
+      "purpose": "Provides process publication changes that affect document categorization, retrieval scoping, and policy lookup semantics."
+    },
+    {
+      "name": "Civil Servant Review Service",
+      "integration_type": "event-driven",
+      "purpose": "Provides review milestones that may cause document state transitions, business linking, or retrieval visibility changes."
+    },
+    {
+      "name": "Approval Workflow Service",
+      "integration_type": "event-driven",
+      "purpose": "Provides approval outcomes that affect document publication status, finalization semantics, and retrieval availability for downstream consumers."
+    },
+    {
+      "name": "AIRS - AI Response Service",
+      "integration_type": "synchronous",
+      "purpose": "Consumes retrieval-package, knowledge-bundle, policy retrieval, metadata lookup, and content-view endpoints to assemble explainable AI response context."
+    }
+  ]
+}

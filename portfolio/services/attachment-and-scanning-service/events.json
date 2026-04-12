@@ -1,0 +1,14 @@
+{
+  "service_name": "Attachment and Scanning Service",
+  "consumed_events": [
+    "RequestSubmitted",
+    "FileScannedClean",
+    "FileScannedInfected"
+  ],
+  "emitted_events": [
+    "ScanRequested",
+    "RequestReadyForCivilServantReview",
+    "AttachmentScanCompleted",
+    "AttachmentScanFailedOrInfected"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "service_name": "Notification Service",
+  "consumed_events": [
+    "RequestSubmitted",
+    "RequestRejectedByCivilServant",
+    "RequestRejectedDueToMalware",
+    "RequestReturnedForFixes",
+    "RequestApproved",
+    "RequestStatusChanged",
+    "RequestUpdated"
+  ],
+  "emitted_events": [
+    "NotificationCreated",
+    "NotificationSent",
+    "NotificationDeliveryFailed"
+  ]
+}

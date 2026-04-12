@@ -1,0 +1,10 @@
+{
+  "include_contract_mismatch": true,
+  "include_missing_internal_design": true,
+  "include_missing_from_top_level": true,
+  "queue_order": [
+    "missing_from_top_level",
+    "missing_internal_design",
+    "contract_mismatch"
+  ]
+}

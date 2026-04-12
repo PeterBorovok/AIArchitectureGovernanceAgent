@@ -1,0 +1,11 @@
+{
+  "service_name": "Shared Data Service",
+  "consumed_events": [
+    "DataUpdateRequested"
+  ],
+  "emitted_events": [
+    "DataChanged",
+    "DataAdded",
+    "DataDepricated"
+  ]
+}

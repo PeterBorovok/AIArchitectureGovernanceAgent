@@ -1,0 +1,13 @@
+{
+  "service_name": "Civil Servant Review Service",
+  "consumed_events": [
+    "RequestSubmitted",
+    "RequestUpdated",
+    "RequestWithdrawn"
+  ],
+  "emitted_events": [
+    "RequestApprovedByCivilServant",
+    "RequestRejectedByCivilServant",
+    "RequestCommentChanged"
+  ]
+}

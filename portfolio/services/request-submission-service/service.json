@@ -1,0 +1,54 @@
+{
+  "name": "Request Submission Service",
+  "purpose": "Manages the government process request submission lifecycle by accepting, validating, storing, updating, and withdrawing citizen or staff submissions. The service renders submission experiences using compiled UI bundles and process definitions obtained from the definition domain, validates submitted payloads through a shared validation engine, persists request submissions and their revision history, and emits lifecycle events for downstream processing.",
+  "bounded_context": "Request Submission",
+  "service_type": "domain",
+  "internal_components": [
+    {
+      "name": "Request Submission API",
+      "type": "api",
+      "responsibility": "Exposes government-facing submission endpoints to start a submission, retrieve an existing submission, update draft or in-progress submission data, submit a request, withdraw a submitted request when allowed, and retrieve submission form runtime metadata required by the client. The API does not own process or UI definitions; it fetches the applicable compiled bundle reference and submission definition view through the application layer from the definition service."
+    },
+    {
+      "name": "Submission Application Service",
+      "type": "application",
+      "responsibility": "Orchestrates submission use cases by resolving the active process definition and compiled bundle reference from the definition service, invoking the shared validation engine, enforcing lifecycle rules, coordinating persistence of submissions and revisions, and triggering event publication after successful state changes."
+    },
+    {
+      "name": "Request Submission Domain Service",
+      "type": "domain",
+      "responsibility": "Implements core business rules for submission lifecycle management, including draft creation, payload update eligibility, final submission checks, withdrawal authorization rules, status transitions, and consistency of definition version association."
+    },
+    {
+      "name": "Submission Repository",
+      "type": "persistence",
+      "responsibility": "Persists and retrieves request submission aggregates, revision history, and references to external definition and bundle versions from the service-owned relational store."
+    },
+    {
+      "name": "Submission Event Publisher",
+      "type": "messaging",
+      "responsibility": "Publishes RequestSubmitted, RequestUpdated, and RequestWithdrawn events to the platform event bus after transactional persistence succeeds, using reliable delivery patterns such as an outbox."
+    }
+  ],
+  "data_owned": [],
+  "consumed_events": [
+    "ProcessDefinitionPublished",
+    "CompiledUiBundlePublished"
+  ],
+  "emitted_events": [
+    "RequestSubmitted",
+    "RequestUpdated",
+    "RequestWithdrawn"
+  ],
+  "external_integrations": [],
+  "security_controls": [],
+  "observability": [],
+  "service_name": "Request Submission Service",
+  "service_purpose": "Manages the government process request submission lifecycle by accepting, validating, storing, updating, and withdrawing citizen or staff submissions. The service renders submission experiences using compiled UI bundles and process definitions obtained from the definition domain, validates submitted payloads through a shared validation engine, persists request submissions and their revision history, and emits lifecycle events for downstream processing.",
+  "open_questions": [
+    "Which exact event names does the definition service publish in the target platform for process definition and compiled UI bundle availability, and should they map directly to ProcessDefinitionPublished and CompiledUiBundlePublished or require renaming?",
+    "Should the API explicitly support draft creation as a separate endpoint from final submission, or is submission creation always treated as an immediately persisted draft in the current government process model?",
+    "Are there regulated retention or legal-hold requirements that require longer-term archival or immutable storage in addition to Aurora-backed revision history?"
+  ],
+  "confidence": "high"
+}

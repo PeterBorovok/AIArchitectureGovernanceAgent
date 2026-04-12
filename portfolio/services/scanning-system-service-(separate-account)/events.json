@@ -1,0 +1,10 @@
+{
+  "service_name": "Scanning System Service (separate account)",
+  "consumed_events": [
+    "ScanRequested"
+  ],
+  "emitted_events": [
+    "FileScannedClean",
+    "FileScannedInfected"
+  ]
+}

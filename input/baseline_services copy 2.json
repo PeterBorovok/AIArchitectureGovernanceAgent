@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Process Definition Service",
+    "description": "Stores schemas and rules for process(es), Provides validation config, UI bundle, and label configuration.",
+    "emits": [
+      "ProcessSchemaPublished",
+      "ProcessSchemaUpdated"
+    ],
+    "consumes": [],
+    "expected_internal_design": true
+  }
+]

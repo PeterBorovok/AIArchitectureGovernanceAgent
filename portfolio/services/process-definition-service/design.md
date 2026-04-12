@@ -1,49 +1,46 @@
 # Process Definition Service
 
 ## Purpose
-Define processes that are managed by the platform, Versioned Process Catalog, Stores schemas and rules for process(es). Provides versioned validation configuration, versioned UI bundle, and versioned label configuration for process definitions.
+Manages process definition artifacts including schemas, business rules, validation configuration, UI bundle metadata, and label configuration. Provides controlled publication and update of process definitions for downstream platform use.
 
 ## Bounded Context
-Process Definition
+Process Definition Management
 
 ## Service Type
-microservice
+domain
 
 ## Internal Components
-- **Process Definition API** (api): Exposes endpoints to create, update, publish, retrieve, and list versioned process definitions, including schemas, rules, validation configuration, UI bundles, and label configuration.
-- **Process Definition Application Service** (application): Coordinates process definition lifecycle use cases, including draft management, version creation, publication, retrieval, and validation of commands against domain rules.
-- **Process Definition Domain** (domain): Encapsulates business rules for process definition versioning, publication state transitions, schema consistency, and integrity of validation, UI bundle, and label configuration artifacts.
-- **Process Definition Repository** (persistence): Persists and retrieves versioned process definitions, metadata, publication status, and associated configuration artifacts.
-- **Process Definition Event Publisher** (messaging): Publishes process definition lifecycle events when a process schema version is published or updated.
+- **Process Definition API** (api): Exposes endpoints to create, update, retrieve, version, validate, and publish process definitions and their related configuration artifacts.
+- **Process Definition Application Service** (application): Coordinates use cases for draft management, versioning, publication workflows, artifact retrieval, and event emission.
+- **Process Definition Domain Service** (domain): Enforces domain rules for schema consistency, version transitions, publication eligibility, and integrity between schema, rules, validation config, UI bundle metadata, and labels.
+- **Process Definition Repository** (persistence): Persists and retrieves process definition aggregates, versions, and associated configuration artifacts from owned data stores.
+- **Process Definition Event Publisher** (messaging): Publishes process schema lifecycle events when a definition is first published or subsequently updated.
 
 ## Data Owned
-- Process definition metadata
-- Versioned process schemas
-- Versioned process rules
-- Versioned validation configurations
-- Versioned UI bundles
-- Versioned label configurations
-- Process definition publication status
-- Process definition version history
+- None
 
 ## Consumed Events
+- None
 
 ## Emitted Events
 - ProcessSchemaPublished
 - ProcessSchemaUpdated
 
 ## External Integrations
+- None
 
 ## Security Controls
-- Role-based access control for creating, updating, publishing, and reading process definitions
-- Authentication and authorization enforced on all service endpoints
-- Audit logging for process definition creation, modification, publication, and access to versioned artifacts
-- Input validation and schema validation for all submitted definition payloads
+- Role-based access control restricting create, update, publish, and read operations according to administrative and consumer permissions.
+- Authentication enforcement for all service APIs using enterprise identity mechanisms.
+- Audit logging of create, update, publish, and version management actions with actor, timestamp, and changed artifact references.
+- Input validation and schema payload validation to prevent malformed or unauthorized definition changes.
+- Encryption in transit for APIs and messaging interactions, and encryption at rest for persisted definition artifacts.
 
 ## Observability
-- Structured application logs for API requests, lifecycle actions, validation failures, and event publication
-- Metrics for request rates, error rates, publish operations, update operations, and persistence latency
-- Distributed tracing across API, application, persistence, and messaging components
+- Structured application logs for API requests, validation failures, publication actions, and event publishing outcomes.
+- Metrics for definition create/update/publish counts, validation error rates, API latency, repository performance, and event publication success/failure.
+- Distributed tracing across API, application, persistence, and messaging components for definition management and publication flows.
+- Audit-oriented monitoring dashboards for publication activity and version change history.
 
 ## Open Questions
 - None

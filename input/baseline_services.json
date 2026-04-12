@@ -1,12 +1,15 @@
 [
-  {
-    "name": "Process Definition Service",
-    "description": "Stores schemas and rules for process(es), Provides validation config, UI bundle, and label configuration.",
+    {
+    "name": "Shared Data Service",
+    "description": "Hold shared data usually static or one that changes rarely and used by different services.",
     "emits": [
-      "ProcessSchemaPublished",
-      "ProcessSchemaUpdated"
+      "DataChanged",
+      "DataAdded",
+      "DataDepricated"
     ],
-    "consumes": [],
+    "consumes": [
+      "DataUpdateRequested"
+    ],
     "expected_internal_design": true
   }
 ]

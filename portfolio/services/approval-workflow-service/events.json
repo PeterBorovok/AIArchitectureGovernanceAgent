@@ -1,0 +1,12 @@
+{
+  "service_name": "Approval Workflow Service",
+  "consumed_events": [
+    "RequestApprovedByCivilServant",
+    "ApprovalStepCompleted (if event driven between steps)"
+  ],
+  "emitted_events": [
+    "RequestApproved",
+    "RequestRejected",
+    "ApprovalStepCompleted"
+  ]
+}

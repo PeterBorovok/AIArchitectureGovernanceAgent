@@ -1,0 +1,21 @@
+{
+  "service_name": "Document Service",
+  "consumed_events": [
+    "FileScanSucceeded",
+    "FileScanFailedOrInfected",
+    "RequestSubmitted",
+    "ProcessDefinitionPublished",
+    "CivilServantReviewCompleted",
+    "ApprovalWorkflowCompleted"
+  ],
+  "emitted_events": [
+    "DocumentRegistered",
+    "DocumentVersionCreated",
+    "DocumentLinkedToSubmission",
+    "DocumentMetadataUpdated",
+    "DocumentPublished",
+    "DocumentArchived",
+    "DocumentReadyForIndexing",
+    "DocumentBlocked"
+  ]
+}

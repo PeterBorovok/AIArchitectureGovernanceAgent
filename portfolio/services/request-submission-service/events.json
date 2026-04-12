@@ -1,0 +1,12 @@
+{
+  "service_name": "Request Submission Service",
+  "consumed_events": [
+    "ProcessDefinitionPublished",
+    "CompiledUiBundlePublished"
+  ],
+  "emitted_events": [
+    "RequestSubmitted",
+    "RequestUpdated",
+    "RequestWithdrawn"
+  ]
+}
